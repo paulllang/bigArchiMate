@@ -12,7 +12,6 @@ import {
 import { NodeMcpServerModule } from '@eclipse-glsp/server-mcp/node.js';
 import { Container, ContainerModule } from 'inversify';
 import { AddressInfo } from 'net';
-import { URI } from 'vscode-uri';
 import { LSPServices } from '../integration.js';
 import { Services, SharedServices } from '../language-server/module.js';
 import { ArchiMateDiagramModule } from './archimate-diagram/diagram-module.js';
@@ -25,7 +24,7 @@ import { ArchiMateMcpDiagramModule } from './archimate-diagram/mcp/archimate-mcp
  * @param services language services
  * @returns a promise that is resolved as soon as the server is shut down or rejects if an error occurs
  */
-export function startGLSPServer(services: LSPServices, workspaceFolder: URI): MaybePromise<void> {
+export function startGLSPServer(services: LSPServices): MaybePromise<void> {
    const launchOptions: SocketLaunchOptions = { ...defaultSocketLaunchOptions, host: '127.0.0.1', logLevel: LogLevel.info };
 
    // create module based on launch options, e.g., logging etc.

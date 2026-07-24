@@ -11,11 +11,6 @@ let glspServer: SocketGlspVscodeServer | undefined;
 
 // This function is called when the extension is activated.
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-   const workspacePath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-   if (!workspacePath) {
-      // if no workspace is open, we do not need to start our servers
-      return;
-   }
    client = launchLanguageClient(context);
    await registerGlspDiagramEditor(context, client);
 }
