@@ -24,12 +24,12 @@ const CHEVRON_DOWN_ICON_ID = 'chevron-right';
 
 @injectable()
 export class CustomToolPalette extends ToolPalette {
+
    protected readonly defaultToolsBtnId = 'default-tool';
+
    protected override initializeContents(containerElement: HTMLElement): void {
-      this.createHeader();
-      this.createBody();
+      super.initializeContents(containerElement);
       this.changeActiveButton(this.defaultToolsButton);
-      containerElement.setAttribute('aria-label', 'Tool-Palette');
    }
 
    protected override createBody(): void {

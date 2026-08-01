@@ -13,8 +13,8 @@ import {
 } from '@big-archimate/protocol';
 import { ArgsUtil, GCompartment, GLabel, GNode, GNodeBuilder } from '@eclipse-glsp/server';
 import { ElementNode, JunctionNode } from '../../../language-server/generated/ast.js';
-import { ArchiMateGModelIndex } from '../../common/gmodel-index.js';
 import { getAbsolutePosition } from '../../../language-server/util/ast-util.js';
+import { ArchiMateGModelIndex } from '../../common/gmodel-index.js';
 
 export class GElementNode extends GNode {
    static override builder(): GElementNodeBuilder {
@@ -53,7 +53,7 @@ export class GElementNodeBuilder extends GNodeBuilder<GElementNode> {
          this.addArg(REFERENCE_VALUE, node.element.$refText);
          this.addArg('label', elementRef?.name || elementRef?.id || 'Grouping');
 
-         this.size(node.width || 200, node.height || 120).position(absolutePosition.x || 100, absolutePosition.y || 100);
+         this.size(node.width || 200, node.height || 120).position(absolutePosition.x ?? 100, absolutePosition.y ?? 100);
 
          this.add(
             GLabel.builder()
@@ -110,7 +110,7 @@ export class GElementNodeBuilder extends GNodeBuilder<GElementNode> {
          .addLayoutOption('hGap', H_GAP)
          .addLayoutOption('prefWidth', node.width || 100)
          .addLayoutOption('prefHeight', node.height || 100)
-         .position(absolutePosition.x || 100, absolutePosition.y || 100);
+         .position(absolutePosition.x ?? 100, absolutePosition.y ?? 100);
 
       return this;
    }
@@ -144,7 +144,7 @@ export class GJunctionNodeBuilder extends GNodeBuilder<GJunctionNode> {
       // The DiagramNode in the langium file holds the coordinates of node
       this.layout('vbox')
          .size(25, 25)
-         .position(absolutePosition.x || 100, absolutePosition.y || 100);
+         .position(absolutePosition.x ?? 100, absolutePosition.y ?? 100);
 
       return this;
    }

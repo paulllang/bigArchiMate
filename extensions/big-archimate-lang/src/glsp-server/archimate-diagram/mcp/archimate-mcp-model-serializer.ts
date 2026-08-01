@@ -90,7 +90,7 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
          };
       }
 
-      // Labels, icons, and anything else GLSP emits are dropped from MCP output to reduce
+      // Icons and anything else GLSP emits are dropped from MCP output to reduce
       // context noise; the LLM does not need to know about visual sub-elements.
       return undefined;
    }
@@ -98,8 +98,13 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
    protected readChildLabel(element: SerializedElement): string | undefined {
       const children = Array.isArray(element.children) ? (element.children as SerializedElement[]) : [];
       for (const child of children) {
-         if (typeof child.text === 'string' && child.text.length > 0) {
-            return child.text;
+         if (typeof child.id === 'string' && child.id.endsWith('_header')) {
+            const grandChildren = Array.isArray(child.children) ? (child.children as SerializedElement[]) : [];
+            for (const grandChild of grandChildren) {
+               if (typeof grandChild.text === 'string' && grandChild.text.length > 0) {
+                  return grandChild.text;
+               }
+            }
          }
       }
       return undefined;
