@@ -2,6 +2,7 @@ import {
    CloseModelArgs,
    CrossReference,
    CrossReferenceContext,
+   ModelConflictError,
    ModelSavedEvent,
    ModelUpdatedEvent,
    OpenModelArgs,
@@ -14,25 +15,44 @@ import {
 } from '@big-archimate/protocol';
 import { AstNode, Deferred, DocumentState, isAstNode } from 'langium';
 import { Disposable, OptionalVersionedTextDocumentIdentifier, Range, TextDocumentEdit, TextEdit, uinteger } from 'vscode-languageserver';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 import { URI, Utils as UriUtils } from 'vscode-uri';
 import { ArchiMateRoot, isArchiMateRoot } from '../language-server/generated/ast.js';
 import { Services, SharedServices } from '../language-server/module.js';
 import { PACKAGE_JSON } from '../language-server/package-manager.js';
 import { findDocument } from '../language-server/util/ast-util.js';
 import { AstArchiMateDocument } from './open-text-document-manager.js';
-import { LANGUAGE_CLIENT_ID } from './openable-text-documents.js';
+import { LANGUAGE_CLIENT_ID, OpenableTextDocuments } from './openable-text-documents.js';
+
+/**
+ * State of the server-to-language-client text channel for a single document.
+ */
+interface LanguageClientPush {
+   /** Latest text waiting to be pushed. Undefined when nothing is queued. */
+   queued?: string;
+   /** Text of the last confirmed push, i.e. what the language client is believed to hold. */
+   applied?: string;
+   /** True while a drain loop is running for this document. */
+   draining: boolean;
+}
 
 /**
  * The model service serves as a facade to access and update semantic models from the language server as a non-LSP client.
  * It provides a simple open-request-update-save/close lifecycle for documents and their semantic model.
  */
 export class ModelService {
+   /** Per-document state of the serialized text channel to the language client, keyed by normalized URI. */
+   protected languageClientPushes = new Map<string, LanguageClientPush>();
+
    constructor(
       protected shared: SharedServices,
       protected documentManager = shared.workspace.TextDocumentManager,
       protected documents = shared.workspace.LangiumDocuments,
       protected documentBuilder = shared.workspace.DocumentBuilder,
-      protected fileSystemProvider = shared.workspace.FileSystemProvider
+      protected fileSystemProvider = shared.workspace.FileSystemProvider,
+      // explicitly typed: on the intersected shared services the inherited signatures would win
+      // and hide the per-client events this service relies on
+      protected textDocuments: OpenableTextDocuments<TextDocument> = shared.workspace.TextDocuments
    ) {
       // sync updates with language client
       this.documentBuilder.onBuildPhase(DocumentState.Validated, (allChangedDocuments, _token) => {
@@ -45,19 +65,102 @@ export class ModelService {
             if (this.documentManager.isOpenInLanguageClient(textDocument.uri)) {
                // we only want to apply a text edit if the editor is already open
                // because opening and updating at the same time might cause problems as the open call resets the document to filesystem
-               this.shared.lsp.Connection?.workspace.applyEdit({
-                  label: 'Update Model',
-                  documentChanges: [
-                     // we use a null version to indicate that the version is known
-                     // eslint-disable-next-line no-null/no-null
-                     TextDocumentEdit.create(OptionalVersionedTextDocumentIdentifier.create(textDocument.uri, null), [
-                        TextEdit.replace(Range.create(0, 0, uinteger.MAX_VALUE, uinteger.MAX_VALUE), textDocument.getText())
-                     ])
-                  ]
-               });
+               this.queueLanguageClientPush(textDocument.uri, textDocument.getText());
             }
          }
       });
+
+      // An edit authored by the language client itself means we no longer know what it holds.
+      this.textDocuments.onDidChangeContent(event => {
+         if (event.clientId !== LANGUAGE_CLIENT_ID) {
+            return;
+         }
+         const push = this.languageClientPushes.get(this.normalizedUri(event.document.uri));
+         if (push && event.document.getText() !== push.applied) {
+            // Not the echo of one of our own pushes but a genuine client-side edit,
+            // so the next push must go out unconditionally.
+            push.applied = undefined;
+         }
+      });
+
+      // Once the language client drops the document we know nothing about its buffer anymore.
+      this.textDocuments.onDidClose(event => {
+         if (event.clientId === LANGUAGE_CLIENT_ID) {
+            this.languageClientPushes.delete(this.normalizedUri(event.document.uri));
+         }
+      });
+   }
+
+   /**
+    * Queues a full-document text update for the language client.
+    *
+    * Pushes are serialized per document and coalesced: while a `workspace/applyEdit` is in flight, any further
+    * update only replaces the queued text. A burst of n updates therefore produces one edit per completed
+    * round-trip instead of n concurrent ones. Firing them concurrently lets the client apply our replaces
+    * against a buffer state they were not computed against, which corrupts that buffer - and since the client
+    * echoes its content back as the new truth, the corruption reaches the document store and the file.
+    */
+   protected queueLanguageClientPush(uri: string, text: string): void {
+      const key = this.normalizedUri(uri);
+      let push = this.languageClientPushes.get(key);
+      if (!push) {
+         push = { draining: false };
+         this.languageClientPushes.set(key, push);
+      }
+      if (text === push.applied) {
+         // The client already holds this text. A build reports a document as changed even when only one of its
+         // dependencies changed, so pushing here would just manufacture a spurious client-side edit.
+         return;
+      }
+      push.queued = text;
+      if (!push.draining) {
+         push.draining = true;
+         // Deliberately not awaited: the build phase must not block on client round-trips.
+         this.drainLanguageClientPushes(uri, push).catch(error =>
+            this.shared.logger.ClientLogger.error(`Text sync for '${uri}' stopped unexpectedly: ${error}`)
+         );
+      }
+   }
+
+   /** Sends queued texts for a document one after the other until the queue is empty. */
+   protected async drainLanguageClientPushes(uri: string, push: LanguageClientPush): Promise<void> {
+      try {
+         while (push.queued !== undefined) {
+            const text = push.queued;
+            push.queued = undefined;
+            // Only remember the text once the client confirmed it, otherwise the next push must be unconditional.
+            push.applied = (await this.applyEditToLanguageClient(uri, text)) ? text : undefined;
+         }
+      } finally {
+         push.draining = false;
+      }
+   }
+
+   /** Replaces the whole document in the language client. Resolves to true if the client applied the edit. */
+   protected async applyEditToLanguageClient(uri: string, text: string): Promise<boolean> {
+      const connection = this.shared.lsp.Connection;
+      if (!connection) {
+         return false;
+      }
+      // Register the text before sending it, so the store can recognise the echo that comes back
+      // instead of mistaking it for a genuine client-side edit and writing it over newer content.
+      this.textDocuments.stagePushedContent(uri, text);
+      try {
+         const result = await connection.workspace.applyEdit({
+            label: 'Update Model',
+            documentChanges: [
+               // we use a null version to indicate that the version is known
+               // eslint-disable-next-line no-null/no-null
+               TextDocumentEdit.create(OptionalVersionedTextDocumentIdentifier.create(uri, null), [
+                  TextEdit.replace(Range.create(0, 0, uinteger.MAX_VALUE, uinteger.MAX_VALUE), text)
+               ])
+            ]
+         });
+         return result.applied;
+      } catch (error: unknown) {
+         this.shared.logger.ClientLogger.error(`Could not update '${uri}' in the language client: ${error}`);
+         return false;
+      }
    }
 
    /**
@@ -71,6 +174,14 @@ export class ModelService {
 
    isOpen(uri: string): boolean {
       return this.documentManager.isOpen(uri);
+   }
+
+   /**
+    * Current version of the document with the given URI, or undefined if it is not open.
+    * Callers pass this back as `baseVersion` on a later update to detect intervening writes.
+    */
+   version(uri: string): number | undefined {
+      return this.textDocuments.get(this.normalizedUri(uri))?.version;
    }
 
    /**
@@ -128,6 +239,11 @@ export class ModelService {
          throw new Error(`No AST node to update exists in '${args.uri}'`);
       }
       const textDocument = document.textDocument;
+      if (args.baseVersion !== undefined && textDocument.version !== args.baseVersion) {
+         // Someone else wrote while the caller was preparing this update, so applying it blindly would
+         // discard their change. The caller decides what to do about it.
+         throw new ModelConflictError(args.uri, args.baseVersion, textDocument.version);
+      }
       const text = typeof args.model === 'string' ? args.model : this.serialize(documentUri, args.model);
       if (text === textDocument.getText()) {
          return {
@@ -139,8 +255,11 @@ export class ModelService {
       const newVersion = textDocument.version + 1;
       const pendingUpdate = new Deferred<AstArchiMateDocument>();
       const listener = this.documentBuilder.onBuildPhase(DocumentState.Validated, (allChangedDocuments, _token) => {
+         // `>=` rather than `===`: another client may legitimately write while we wait (a user typing in
+         // the text editor), which advances the shared version past ours. Our text is already in the
+         // store by then, so any validated build at or beyond our version means the update went through.
          const updatedDocument = allChangedDocuments.find(
-            doc => doc.uri.toString() === documentUri.toString() && doc.textDocument.version === newVersion
+            doc => doc.uri.toString() === documentUri.toString() && doc.textDocument.version >= newVersion
          );
          if (updatedDocument) {
             pendingUpdate.resolve({
@@ -195,6 +314,11 @@ export class ModelService {
    protected serialize(uri: URI, model: AstNode): string {
       const serializer = this.shared.ServiceRegistry.getServices(uri).serializer.Serializer;
       return serializer.serialize(model);
+   }
+
+   /** Canonical key for a document URI, so the same document is never tracked under two spellings. */
+   protected normalizedUri(uri: string): string {
+      return URI.parse(uri).toString();
    }
 
    getId(node: AstNode, uri = findDocument(node)?.uri): string | undefined {

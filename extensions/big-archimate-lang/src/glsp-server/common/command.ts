@@ -20,28 +20,37 @@ export class ArchiMateCommand extends JsonRecordingCommand<SourceModel> {
       return this.state.updateSourceModel(newModel);
    }
 
+   // All three run through `runOperation` so an external model reload cannot replace the semantic root
+   // between mutating it and serializing the result, which would drop the change on the floor.
+
    override async execute(): Promise<void> {
-      const beforeState = this.deepClone(await this.getJsonObject());
-      await this.doExecute();
-      const afterState = await this.getJsonObject();
-      this.undoPatch = jsonPatch.compare(afterState, beforeState);
-      this.redoPatch = jsonPatch.compare(beforeState, afterState);
-      await this.postChange?.(afterState);
+      return this.state.runOperation(async () => {
+         const beforeState = this.deepClone(await this.getJsonObject());
+         await this.doExecute();
+         const afterState = await this.getJsonObject();
+         this.undoPatch = jsonPatch.compare(afterState, beforeState);
+         this.redoPatch = jsonPatch.compare(beforeState, afterState);
+         await this.postChange?.(afterState);
+      });
    }
 
    override async undo(): Promise<void> {
       if (this.undoPatch) {
-         const result = this.applyPatch(await this.getJsonObject(), this.undoPatch);
-         await this.undoAction?.();
-         await this.postChange?.(result.newDocument);
+         return this.state.runOperation(async () => {
+            const result = this.applyPatch(await this.getJsonObject(), this.undoPatch!);
+            await this.undoAction?.();
+            await this.postChange?.(result.newDocument);
+         });
       }
    }
 
    override async redo(): Promise<void> {
       if (this.redoPatch) {
-         const result = this.applyPatch(await this.getJsonObject(), this.redoPatch);
-         await this.redoAction?.();
-         await this.postChange?.(result.newDocument);
+         return this.state.runOperation(async () => {
+            const result = this.applyPatch(await this.getJsonObject(), this.redoPatch!);
+            await this.redoAction?.();
+            await this.postChange?.(result.newDocument);
+         });
       }
    }
 }

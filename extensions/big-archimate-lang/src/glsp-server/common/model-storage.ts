@@ -58,15 +58,16 @@ export class ArchiMateModelStorage implements SourceModelStorage, ClientSessionL
       this.toDispose.push(
          this.state.modelService.onModelUpdated(rootUri, async event => {
             if (this.state.clientId !== event.sourceClientId || event.reason !== 'changed') {
-               const result = await this.updateAndSubmit(rootUri, event.document);
+               // The event document is deliberately not forwarded - see updateAndSubmit.
+               const result = await this.updateAndSubmit(rootUri);
                this.actionDispatcher.dispatchAll(result);
             }
          })
       );
    }
 
-   protected async update(uri: string, document?: AstArchiMateDocument): Promise<AstArchiMateDocument | undefined> {
-      const doc = document ?? (await this.state.modelService.request(uri));
+   protected async update(uri: string): Promise<AstArchiMateDocument | undefined> {
+      const doc = await this.state.modelService.request(uri);
       if (doc) {
          this.state.setSemanticRoot(uri, doc.root);
          const actions = await this.updateEditMode(doc);
@@ -96,8 +97,17 @@ export class ArchiMateModelStorage implements SourceModelStorage, ClientSessionL
       return actions;
    }
 
-   protected updateAndSubmit = debounce(async (rootUri: string, document: AstArchiMateDocument): Promise<Action[]> => {
-      await this.update(rootUri, document);
+   protected updateAndSubmit = debounce(async (rootUri: string): Promise<Action[]> => {
+      // Never swap the semantic root while an operation is mid-flight: handlers mutate it in place, so
+      // replacing it here would discard whatever they have attached but not yet serialized.
+      await this.state.whenOperationsSettled();
+      // Read the current document rather than the snapshot the triggering event carried. That snapshot
+      // is already stale by the debounce interval, and during a burst of operations it can be dozens of
+      // revisions old - adopting it rolls the model back to a state predating everything written since.
+      const document = await this.update(rootUri);
+      if (!document) {
+         return [];
+      }
       return [...(await this.submissionHandler.submitModel('external')), ...(await this.updateEditMode(document))];
    }, 250);
 

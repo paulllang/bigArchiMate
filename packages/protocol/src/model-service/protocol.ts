@@ -85,6 +85,31 @@ export interface CloseModelArgs extends ClientModelArgs {}
 
 export interface UpdateModelArgs<T = ArchiMateRoot> extends ClientModelArgs {
    model: T | string;
+   /**
+    * Version the update is based on, for optimistic concurrency. When given and the document has
+    * meanwhile moved to a different version, the update is rejected with a `ModelConflictError`
+    * instead of overwriting whatever another client wrote in the meantime.
+    */
+   baseVersion?: number;
+}
+
+/**
+ * Thrown when an update based on {@link UpdateModelArgs.baseVersion} is rejected because the
+ * document has moved on. Callers decide the policy: merge, retry, force, or drop the change.
+ */
+export class ModelConflictError extends Error {
+   constructor(
+      readonly uri: string,
+      readonly expected: number,
+      readonly actual: number
+   ) {
+      super(`Conflict on ${uri}: update based on version ${expected}, but document is at version ${actual}`);
+      this.name = 'ModelConflictError';
+   }
+
+   static is(error: unknown): error is ModelConflictError {
+      return error instanceof ModelConflictError;
+   }
 }
 
 export interface SaveModelArgs<T = ArchiMateRoot> extends ClientModelArgs {
