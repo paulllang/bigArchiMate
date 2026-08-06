@@ -18,7 +18,7 @@ In order to build bigArchiMate for Windows you need to have Visual Studio instal
 
 -  Download and install the installer from on the following page:
 
-   -  <https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022>
+   -  <https://visualstudio.microsoft.com/vs/older-downloads/#visual-studio-2022-and-other-products>
 
 -  Make sure to enable "Desktop development with C++" during the installation.
 
@@ -39,8 +39,8 @@ Open a new PowerShell window (this is needed after installing scoop) and execute
 scoop install python@3.11.4
 scoop install yarn@1.22.22
 scoop install nvm
-nvm install 20
-nvm use 20
+nvm install 22
+nvm use 22
 npm config edit
 ```
 

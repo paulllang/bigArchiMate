@@ -24,7 +24,7 @@ For more information see our corresponding [paper](https://model-engineering.inf
 
 Please install all necessary [prerequisites](https://github.com/eclipse-theia/theia/blob/master/doc/Developing.md#prerequisites) on your system.
 
-For detailed instructions for a Windows machine, follow [this](./docs/PrerequisitesWindows..md) guide.
+For detailed instructions for a Windows machine, follow [this](./docs/PrerequisitesWindows.md) guide.
 
 ## Installing the application dependencies
 
