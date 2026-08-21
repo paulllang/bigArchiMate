@@ -73,20 +73,20 @@ export const GraphItemSchema = z.object({
 // layer output schemas
 
 export const StandardLayerSchema = z.object({
-   elements: z.array(ElementNodeSchema).default([]),
-   relations: z.array(RelationEdgeSchema).default([])
+   elements: z.array(ElementNodeSchema).optional(),
+   relations: z.array(RelationEdgeSchema).optional()
 });
 
 export const OtherLayerSchema = z.object({
    junctions: z.array(JunctionNodeSchema).optional(),
    groupings: z.array(ElementNodeSchema).optional(),
    'crosslayer relations': z.array(RelationEdgeSchema).optional(),
-   graph: z.array(GraphItemSchema).min(1).max(1)
+   graph: z.array(GraphItemSchema).optional()
 });
 
 // main output schema
 
-export const ArchiMateOutputSchema = z.object({
+const ArchiMateDiagramModelOutputSchema = z.object({
    sessionId: z.string(),
    Application: StandardLayerSchema.optional(),
    Business: StandardLayerSchema.optional(),
@@ -112,7 +112,7 @@ export class StructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagramTo
       'For large diagrams, prefer `query-elements` (filtered listing) or `count-elements` (size summary) ' +
       'before falling back to this full dump.';
    readonly inputSchema = DiagramModelInputSchema;
-   override readonly outputSchema = ArchiMateOutputSchema;
+   override readonly outputSchema = ArchiMateDiagramModelOutputSchema;
 
    @inject(McpModelSerializer) protected serializer: McpModelSerializer;
 
