@@ -1,5 +1,6 @@
 import { BindingTarget, InstanceMultiBinding } from '@eclipse-glsp/server';
 import {
+   CountElementsMcpToolHandler,
    DefaultMcpDiagramModule,
    DiagramModelMcpToolHandler,
    ElementTypesProvider,
@@ -12,6 +13,7 @@ import { ArchiMateElementTypesProvider } from './archimate-element-types-provide
 import { ArchiMateLayerSummaryMcpToolHandler } from './archimate-layer-summary-tool-handler.js';
 import { ArchiMateMcpLabelProvider } from './archimate-mcp-label-provider.js';
 import { ArchiMateMcpModelSerializer } from './archimate-mcp-model-serializer.js';
+import { ArchiMateCountElementsMcpToolHandler } from './tools/handlers/archimate-count-elements-mcp-tool-handler.js';
 import { StructuredArchiMateModelMcpToolHandler } from './tools/handlers/structured-archimate-model-mcp-tool-handler.js';
 import { StructuredArchiMateQueryElementsMcpToolHandler } from './tools/handlers/structured-archimate-query-elements-mcp-tool-handler.js';
 import { UnstructuredArchiMateModelMcpToolHandler } from './tools/handlers/unstructured-archimate-model-mcp-tool-handler.js';
@@ -38,6 +40,7 @@ export class ArchiMateMcpDiagramModule extends DefaultMcpDiagramModule {
    protected override configureToolHandlers(binding: InstanceMultiBinding<McpDiagramToolHandlerConstructor>): void {
       super.configureToolHandlers(binding);
       binding.add(ArchiMateLayerSummaryMcpToolHandler);
+      binding.rebind(CountElementsMcpToolHandler, ArchiMateCountElementsMcpToolHandler);
 
       /**
        * @experimental
