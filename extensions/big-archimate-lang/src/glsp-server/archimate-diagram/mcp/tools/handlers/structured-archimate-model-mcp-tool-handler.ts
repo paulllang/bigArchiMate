@@ -1,11 +1,3 @@
-import {
-   ARCHIMATE_ELEMENT_TYPE_MAP,
-   ARCHIMATE_JUNCTION_TYPE_MAP,
-   ARCHIMATE_RELATION_TYPE_MAP,
-   elementTypes,
-   junctionTypes,
-   relationTypes
-} from '@big-archimate/protocol/lib/glsp/types.js';
 import { GCompartment, GLabel, GModelElement } from '@eclipse-glsp/server';
 import {
    AbstractMcpDiagramToolHandler,
@@ -40,8 +32,8 @@ export const BoundsSchema = z.object({
 
 export const ElementNodeSchema = z.object({
    id: z.string(),
-   type: z.enum(ARCHIMATE_ELEMENT_TYPE_MAP.values()),
-   element: z.enum(elementTypes),
+   type: z.string(),
+   element: z.string(),
    label: z.string(),
    position: PositionSchema,
    size: SizeSchema,
@@ -50,16 +42,16 @@ export const ElementNodeSchema = z.object({
 
 export const RelationEdgeSchema = z.object({
    id: z.string(),
-   type: z.enum(ARCHIMATE_RELATION_TYPE_MAP.values()),
-   relation: z.enum(relationTypes),
+   type: z.string(),
+   relation: z.string(),
    sourceId: z.string(),
    targetId: z.string()
 });
 
 export const JunctionNodeSchema = z.object({
    id: z.string(),
-   type: z.enum(ARCHIMATE_JUNCTION_TYPE_MAP.values()),
-   junction: z.enum(junctionTypes),
+   type: z.string(),
+   junction: z.string(),
    position: PositionSchema,
    size: SizeSchema,
    bounds: BoundsSchema

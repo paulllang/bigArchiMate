@@ -1,9 +1,5 @@
 import { ARCHIMATE_NODE_TYPE_MAP, getLayer, isElementType, isJunctionType, layerTypes } from '@big-archimate/protocol';
-import {
-   AbstractMcpDiagramToolHandler,
-   McpDiagramScopedInputSchema,
-   McpToolResult
-} from '@eclipse-glsp/server-mcp';
+import { AbstractMcpDiagramToolHandler, McpDiagramScopedInputSchema, McpToolResult } from '@eclipse-glsp/server-mcp';
 import { injectable } from 'inversify';
 import * as z from 'zod/v4';
 
@@ -26,14 +22,15 @@ export const ArchiMateLayerSummaryOutputSchema = z.object({
  */
 @injectable()
 export class ArchiMateLayerSummaryMcpToolHandler extends AbstractMcpDiagramToolHandler<ArchiMateLayerSummaryInput> {
-   static readonly NAME = 'archimate-layer-summary';
+   static readonly NAME = 'layer-summary';
    readonly name = ArchiMateLayerSummaryMcpToolHandler.NAME;
    override readonly title = 'ArchiMate Layer Summary';
    readonly description =
       'Count ArchiMate elements in the diagram grouped by layer ' +
       '(Business, Application, Technology, Motivation, Strategy, ImplementationAndMigration, Other). ' +
       'Cheap layer-balance check before fetching the full diagram-model. ' +
-      'Relations are not counted because ArchiMate relations are not layered.';
+      'Relations are not counted because ArchiMate relations are not layered.' +
+      'Junctions and the graph itself are not counted as well.';
    readonly inputSchema = ArchiMateLayerSummaryInputSchema;
    override readonly outputSchema = ArchiMateLayerSummaryOutputSchema;
 
@@ -58,6 +55,6 @@ export class ArchiMateLayerSummaryMcpToolHandler extends AbstractMcpDiagramToolH
 
    protected renderMarkdown(total: number, countsByLayer: Record<string, number>): string {
       const rows = layerTypes.map(layer => `- ${layer}: ${countsByLayer[layer] ?? 0}`).join('\n');
-      return `Total ArchiMate elements: ${total}\n\nBy layer:\n${rows}`;
+      return `Total ArchiMate element${total === 1 ? '' : 's'}: ${total}\n\nBy layer:\n${rows}`;
    }
 }
