@@ -59,6 +59,17 @@
         }
       }
     },
+    "customEditors": [
+      {
+        "viewType": "archimate.glspDiagram",
+        "displayName": "ArchiMate Diagram",
+        "selector": [
+          {
+            "filenamePattern": "*.arch"
+          }
+        ]
+      }
+    ],
     "grammars": [
       {
         "language": "archimate",
@@ -79,17 +90,6 @@
         "configuration": "./language-configuration.json"
       }
     ],
-    "customEditors": [
-      {
-        "viewType": "archimate.glspDiagram",
-        "displayName": "ArchiMate Diagram",
-        "selector": [
-          {
-            "filenamePattern": "*.arch"
-          }
-        ]
-      }
-    ],
     "mcpServerDefinitionProviders": [
       {
         "id": "glsp-archimate",
@@ -102,10 +102,10 @@
   ],
   "dependencies": {
     "@big-archimate/protocol": "0.0.0",
-    "@eclipse-glsp/layout-elk": "2.7.0-next.11",
-    "@eclipse-glsp/server": "2.7.0-next.11",
-    "@eclipse-glsp/server-mcp": "2.7.0-next.11",
-    "@eclipse-glsp/vscode-integration": "2.7.0-next.5",
+    "@eclipse-glsp/layout-elk": "2.8.0",
+    "@eclipse-glsp/server": "2.8.0",
+    "@eclipse-glsp/server-mcp": "2.8.0",
+    "@eclipse-glsp/vscode-integration": "2.8.0",
     "chalk": "~4.1.2",
     "chevrotain": "~11.0.3",
     "commander": "~10.0.0",
