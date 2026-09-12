@@ -26,8 +26,8 @@
     "@big-archimate/core": "0.0.0",
     "@big-archimate/glsp-client": "0.0.0",
     "@big-archimate/protocol": "0.0.0",
-    "@eclipse-glsp/client": "2.7.0-next.25",
-    "@eclipse-glsp/vscode-integration-webview": "2.7.0-next.5",
+    "@eclipse-glsp/client": "2.8.0",
+    "@eclipse-glsp/vscode-integration-webview": "2.8.0",
     "@vscode/codicons": "^0.0.44"
   },
   "devDependencies": {

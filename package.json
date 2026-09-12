@@ -34,7 +34,8 @@
     "watch:electron": "lerna run --parallel --ignore=\"big-archimate-browser-app\" watch"
   },
   "resolutions": {
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "zod": "^4.0.0"
   },
   "dependencies": {
     "sprotty-routing-libavoid": "^1.4.1"
