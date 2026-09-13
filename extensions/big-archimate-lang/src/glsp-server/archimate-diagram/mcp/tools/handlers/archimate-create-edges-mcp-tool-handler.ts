@@ -21,21 +21,6 @@ type ValidationResult = z.infer<typeof CreateEdgesValidationResultSchema>;
  */
 @injectable()
 export class ArchiMateCreateEdgesMcpToolHandler extends CreateEdgesMcpToolHandler {
-   protected override runDryRun(edges: EdgeInput[]): McpToolResult {
-      const validationResults: ValidationResult[] = edges.map(edge => this.validateEdge(edge));
-      const validCount = validationResults.filter(result => result.isValid).length;
-      const summary =
-         `Dry run: validated ${edges.length} edge(s); ${validCount} would be accepted, ${edges.length - validCount} rejected.\n` +
-         validationResults
-            .map(
-               result =>
-                  `- ${result.edgeType} ${result.sourceElementId} → ${result.targetElementId}: ` +
-                  `${result.isValid ? 'valid' : `invalid (${result.reason})`}`
-            )
-            .join('\n');
-      return this.success(summary, { createdEdges: [], dispatchedCommands: 0, errors: [], validationResults });
-   }
-
    protected override async runCreate(edges: EdgeInput[]): Promise<McpToolResult> {
       let beforeIds = this.modelState.index.allIds();
 
@@ -145,7 +130,7 @@ export class ArchiMateCreateEdgesMcpToolHandler extends CreateEdgesMcpToolHandle
       source: GModelElement,
       target: GModelElement
    ): { isValid: boolean; reason?: string } {
-      let isValid = false;
+      const isValid = false;
 
       const relationType = ARCHIMATE_RELATION_TYPE_MAP.getReverse(elementTypeId);
       const sourceType = ARCHIMATE_NODE_TYPE_MAP.getReverse(source.type);

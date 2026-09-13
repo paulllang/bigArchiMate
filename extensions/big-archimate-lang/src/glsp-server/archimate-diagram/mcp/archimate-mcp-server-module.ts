@@ -2,10 +2,7 @@ import { ElementTypesMcpToolHandler, McpHandlerMultiBinding, McpToolHandler } fr
 import { NodeMcpServerModule } from '@eclipse-glsp/server-mcp/node.js';
 import { ArchimateElementTypesMcpToolHandler } from './tools/handlers/archimate-element-types-mcp-tool-handler.js';
 /**
- * ArchiMate-specific diagram-scope MCP module. Inherits the default MCP tool set
- * (session-info, query-elements, diagram-model, create-nodes, ...) and binds
- * ArchiMate-aware providers for element-type enumeration, label lookup, and
- * model serialization. Adds the archimate-layer-summary tool.
+ * ArchiMate-specific server-scope MCP module.
  */
 export class ArchiMateNodeMcpServerModule extends NodeMcpServerModule {
    protected override configureToolHandlers(binding: McpHandlerMultiBinding<McpToolHandler>): void {
