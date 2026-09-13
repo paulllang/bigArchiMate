@@ -95,12 +95,12 @@ const ArchiMateDiagramModelOutputSchema = z.object({
  */
 @injectable()
 export class StructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagramToolHandler<DiagramModelInput> {
-   static readonly NAME = 'archimate-diagram-model';
+   static readonly NAME = 'diagram-model';
    readonly name = StructuredArchiMateModelMcpToolHandler.NAME;
-   override readonly title = 'ArchiMate Diagram Model Structure';
+   override readonly title = 'Diagram Model Structure';
    override readonly description =
-      'Get the complete ArchiMate diagram for a session as a JSON in structuredContent. ' +
-      'Includes all elements, relationships, junctions, and their relevant properties. ' +
+      'Get the complete GLSP model for a session as a JSON in structuredContent. ' +
+      'Includes all nodes, edges, and their relevant properties. ' +
       'For large diagrams, prefer `query-elements` (filtered listing) or `count-elements` (size summary) ' +
       'before falling back to this full dump.';
    readonly inputSchema = DiagramModelInputSchema;
@@ -128,7 +128,7 @@ export class StructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagramTo
    // It will be placed in the content property of the response,
    // whereas the serialized diagram will be in structuredContent.
    protected summarizeStructuredModel(root: GModelElement, elementCount: number): string {
-      return `Diagram '${this.aliasService.alias(root.id)}' (${root.type}) contains ${elementCount} concept${
+      return `Diagram '${this.aliasService.alias(root.id)}' (${root.type}) contains ${elementCount} element${
          elementCount === 1 ? '' : 's'
       }. Full structure in structuredContent.`;
    }

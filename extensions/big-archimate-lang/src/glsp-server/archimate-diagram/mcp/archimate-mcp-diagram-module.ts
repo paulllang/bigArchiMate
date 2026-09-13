@@ -10,20 +10,23 @@ import {
    McpDiagramToolHandlerConstructor,
    McpLabelProvider,
    McpModelSerializer,
+   ModifyNodesMcpToolHandler,
    QueryElementsMcpToolHandler
 } from '@eclipse-glsp/server-mcp';
 import { ArchiMateElementTypesProvider } from './archimate-element-types-provider.js';
-import { ArchiMateLayerSummaryMcpToolHandler } from './archimate-layer-summary-tool-handler.js';
 import { ArchiMateMcpLabelProvider } from './archimate-mcp-label-provider.js';
 import { ArchiMateMcpModelSerializer } from './archimate-mcp-model-serializer.js';
 import { ArchiMateCountElementsMcpToolHandler } from './tools/handlers/archimate-count-elements-mcp-tool-handler.js';
 import { ArchiMateCreateEdgesMcpToolHandler } from './tools/handlers/archimate-create-edges-mcp-tool-handler.js';
 import { ArchiMateCreateNodesMcpToolHandler } from './tools/handlers/archimate-create-nodes-mcp-tool-handler.js';
 import { ArchiMateDeleteElementsMcpToolHandler } from './tools/handlers/archimate-delete-elements-mcp-tool-handler.js';
+import { ArchiMateLayerSummaryMcpToolHandler } from './tools/handlers/archimate-layer-summary-tool-handler.js';
+import { ArchiMateModifyNodesMcpToolHandler } from './tools/handlers/archimate-modify-nodes-mcp-tool-handler.js';
 import { StructuredArchiMateModelMcpToolHandler } from './tools/handlers/structured-archimate-model-mcp-tool-handler.js';
 import { StructuredArchiMateQueryElementsMcpToolHandler } from './tools/handlers/structured-archimate-query-elements-mcp-tool-handler.js';
 import { UnstructuredArchiMateModelMcpToolHandler } from './tools/handlers/unstructured-archimate-model-mcp-tool-handler.js';
 import { UnstructuredArchiMateQueryElementsMcpToolHandler } from './tools/handlers/unstructured-archimate-query-elements-mcp-tool-handler.js';
+
 /**
  * ArchiMate-specific diagram-scope MCP module. Inherits the default MCP tool set
  * (session-info, query-elements, diagram-model, create-nodes, ...) and binds
@@ -50,6 +53,7 @@ export class ArchiMateMcpDiagramModule extends DefaultMcpDiagramModule {
       binding.rebind(CreateNodesMcpToolHandler, ArchiMateCreateNodesMcpToolHandler);
       binding.rebind(CreateEdgesMcpToolHandler, ArchiMateCreateEdgesMcpToolHandler);
       binding.rebind(DeleteElementsMcpToolHandler, ArchiMateDeleteElementsMcpToolHandler);
+      binding.rebind(ModifyNodesMcpToolHandler, ArchiMateModifyNodesMcpToolHandler);
 
       /**
        * @experimental

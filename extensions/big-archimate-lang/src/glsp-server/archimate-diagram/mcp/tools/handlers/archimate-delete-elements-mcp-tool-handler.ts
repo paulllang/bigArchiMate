@@ -9,12 +9,18 @@ import { injectable } from 'inversify';
  */
 @injectable()
 export class ArchiMateDeleteElementsMcpToolHandler extends DeleteElementsMcpToolHandler {
+   override readonly description =
+      'Delete one or more elements (nodes or edges) from the diagram. ' +
+      'This operation modifies the diagram state and requires user approval. ' +
+      'Automatically handles dependent elements (e.g., deleting a node also deletes connected edges).' +
+      'The graph itself cannot be deleted.';
+
    protected override async createResult({ elementIds }: DeleteElementsInput): Promise<McpToolResult> {
       const realIds = this.resolveExistingIds(elementIds);
       // Capture identities BEFORE dispatch — once deleted, `describeElement` returns undefined.
       const deletedElements = realIds
          .map(realId => this.describeElement(realId))
-         .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined);
+         .filter((entry): entry is NonNullable<typeof entry> => entry !== undefined && entry.elementTypeId !== DefaultTypes.GRAPH);
       const beforeCount = this.countExistingConcepts();
       await this.actionDispatcher.dispatch(DeleteElementOperation.create(realIds));
       const deletedCount = beforeCount - this.countExistingConcepts();

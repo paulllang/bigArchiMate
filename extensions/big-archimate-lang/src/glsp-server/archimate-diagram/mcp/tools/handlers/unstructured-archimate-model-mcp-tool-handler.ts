@@ -14,12 +14,12 @@ import { inject, injectable } from 'inversify';
  */
 @injectable()
 export class UnstructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagramToolHandler<DiagramModelInput> {
-   static readonly NAME = 'archimate-diagram-model';
+   static readonly NAME = 'diagram-model';
    readonly name = UnstructuredArchiMateModelMcpToolHandler.NAME;
-   override readonly title = 'ArchiMate Diagram Model Structure';
+   override readonly title = 'Diagram Model Structure';
    override readonly description =
-      'Get the complete ArchiMate diagram for a session. ' +
-      'Includes all elements, relationships, junctions, and their relevant properties. ' +
+      'Get the complete GLSP model for a session. ' +
+      'Includes all nodes, edges, and their relevant properties. ' +
       'For large diagrams, prefer `query-elements` (filtered listing) or `count-elements` (size summary) ' +
       'before falling back to this full dump.';
    readonly inputSchema = DiagramModelInputSchema;
@@ -46,7 +46,7 @@ export class UnstructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagram
    // It will be placed before the serialized diagram together
    // in the content property of the response.
    protected summarizeModel(root: GModelElement, elementCount: number, sessionId: string): string {
-      return `Diagram '${this.aliasService.alias(root.id)}' (${root.type}) contains ${elementCount} concept${
+      return `Diagram '${this.aliasService.alias(root.id)}' (${root.type}) contains ${elementCount} element${
          elementCount === 1 ? '' : 's'
       } for sessionId '${sessionId}'.`;
    }

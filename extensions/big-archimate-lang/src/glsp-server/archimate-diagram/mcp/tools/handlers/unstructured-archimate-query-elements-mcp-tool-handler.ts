@@ -12,9 +12,9 @@ import { inject, injectable } from 'inversify';
 /** Two-mode element query — list/filter or inspect-by-id, discriminated by `elementIds` presence. */
 @injectable()
 export class UnstructuredArchiMateQueryElementsMcpToolHandler extends AbstractMcpDiagramToolHandler<QueryElementsInput> {
-   static readonly NAME = 'query-archimate-elements';
+   static readonly NAME = 'query-elements';
    readonly name = UnstructuredArchiMateQueryElementsMcpToolHandler.NAME;
-   override readonly title = 'Query ArchiMate Diagram Elements';
+   override readonly title = 'Query Diagram Elements';
    readonly description =
       'Find or inspect elements in the session diagram. Pass `elementIds` to inspect specific ' +
       'elements in detail (rich per-element data). Pass `types` and/or `labelMatch` to search by ' +
@@ -91,13 +91,13 @@ export class UnstructuredArchiMateQueryElementsMcpToolHandler extends AbstractMc
          matches.push({ id: this.aliasService.alias(element.id), type: element.type, ...(label !== undefined ? { label } : {}) });
       }
 
-      const summary = matches.length === 0 ? 'no concepts matched the query.' : this.renderMarkdown(matches, truncated);
+      const summary = matches.length === 0 ? 'no elements matched the query.' : this.renderMarkdown(matches, truncated);
       return this.success('Executed in `list` mode; ' + summary);
    }
 
    protected renderMarkdown(matches: { id: string; type: string; label?: string }[], truncated: boolean): string {
       const rows = matches.map(match => `- ${match.id} (${match.type})${match.label ? ` — "${match.label}"` : ''}`).join('\n');
       const tail = truncated ? '\n\n_(truncated — increase `limit` or refine filters to see more)_' : '';
-      return `Query matched ${matches.length} concept${matches.length === 1 ? '' : 's'}:\n${rows}${tail}`;
+      return `Query matched ${matches.length} element${matches.length === 1 ? '' : 's'}:\n${rows}${tail}`;
    }
 }
