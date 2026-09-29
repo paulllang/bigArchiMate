@@ -2,16 +2,16 @@ import { LanguageExtensionChannelName } from '@big-archimate/protocol';
 import { Action, ActionMessage, ActionMessageHandler, ConnectionProvider, GLSPClient, JsonrpcGLSPClient } from '@eclipse-glsp/client';
 import { McpInitializeParameters } from '@eclipse-glsp/protocol';
 import { BaseGLSPClientContribution, TheiaJsonrpcGLSPClient } from '@eclipse-glsp/theia-integration';
-import { Emitter } from '@theia/core';
+import { Emitter, PreferenceService } from '@theia/core';
 import { Deferred } from '@theia/core/lib/common/promise-util';
 import { inject, injectable } from '@theia/core/shared/inversify';
 import { Disposable, MessageConnection } from '@theia/core/shared/vscode-languageserver-protocol';
 import { OutputChannelManager } from '@theia/output/lib/browser/output-channel';
-import '../../style/diagram.css';
-import '../../style/tool-palette.css';
-import '../../style/magic-edge-connector-palette.css';
-import { ArchiMateLanguageContributionId } from '../common/diagram-language';
 import { load as loadLibavoidRouter } from 'sprotty-routing-libavoid';
+import '../../style/diagram.css';
+import '../../style/magic-edge-connector-palette.css';
+import '../../style/tool-palette.css';
+import { ArchiMateLanguageContributionId } from '../common/diagram-language';
 
 /** The message the GLSP server outputs as soon as it is properly connected through a socket. */
 export const CLIENT_CONNECTION_READY_MSG = 'Starting GLSP server connection';
@@ -21,15 +21,24 @@ export const CLIENT_CONNECTION_READY_MSG = 'Starting GLSP server connection';
  * This contribution requires some special handling as our GLSP server might not be running as it is started through a VS Code extension.
  */
 @injectable()
-export class ClientConribution extends BaseGLSPClientContribution {
+export class ClientContribution extends BaseGLSPClientContribution {
    @inject(OutputChannelManager) protected outputChannelManager: OutputChannelManager;
+   @inject(PreferenceService) protected readonly preferenceService: PreferenceService;
 
    readonly id = ArchiMateLanguageContributionId;
 
    protected override async createInitializeParameters(): Promise<McpInitializeParameters> {
+
+      // User can choose in settings.json or through the UI to use a random port or a fixed port for the GLSP server.
+      // If a fixed port is chosen, we read it from the preferences.
+      let portNumber = 0; // (0 = random)
+      if (!this.preferenceService.get('big-archimate.mcp.port.random', true)) {
+         portNumber = this.preferenceService.get('big-archimate.mcp.port.number', 0);
+      }
+
       return {
          ...(await super.createInitializeParameters()),
-         mcpServer: { name: 'glsp-archimate' }
+         mcpServer: { name: 'glsp-archimate', port: portNumber }
       };
    }
 

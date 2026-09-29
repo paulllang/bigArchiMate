@@ -44,7 +44,7 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "bigArchiMate configuration",
+      "title": "bigArchiMate",
       "properties": {
         "big-archimate.trace.server": {
           "scope": "window",

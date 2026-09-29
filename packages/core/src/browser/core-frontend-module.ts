@@ -1,4 +1,4 @@
-import { MenuContribution } from '@theia/core';
+import { MenuContribution, PreferenceContribution } from '@theia/core';
 import { LabelProviderContribution } from '@theia/core/lib/browser';
 import { ContainerModule } from '@theia/core/shared/inversify';
 import { SaveFileDialog, SaveFileDialogFactory, SaveFileDialogProps } from '@theia/filesystem/lib/browser';
@@ -10,6 +10,7 @@ import '../../style/index.css';
 import { createFileNavigatorWidget } from './file-navigator-tree-widget';
 import { CustomLabelProvider } from './label-provider';
 import { CustomFileNavigatorContribution, CustomWorkspaceCommandContribution } from './new-file-contribution';
+import { ArchiMatePreferenceContribution, archimatePreferenceSchema } from './preferences';
 import { createCustomSaveFileDialogContainer } from './save-file-dialog';
 
 export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
@@ -28,4 +29,7 @@ export default new ContainerModule((bind, _unbind, _isBound, rebind) => {
    rebind(SaveFileDialogFactory).toFactory(
       ctx => (props: SaveFileDialogProps) => createCustomSaveFileDialogContainer(ctx.container, props).get(SaveFileDialog)
    );
+
+   bind(ArchiMatePreferenceContribution).toConstantValue({ schema: archimatePreferenceSchema });
+   bind(PreferenceContribution).toService(ArchiMatePreferenceContribution);
 });

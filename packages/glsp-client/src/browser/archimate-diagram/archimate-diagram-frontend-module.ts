@@ -8,7 +8,7 @@ import {
 } from '@eclipse-glsp/theia-integration';
 
 import { ArchiMateDiagramLanguage } from '../../common/diagram-language';
-import { ClientConribution } from '../client-contribution';
+import { ClientContribution } from '../client-contribution';
 import { ArchiMateDiagramConfiguration } from './archimate-diagram-configuration';
 import { ArchiMateDiagramManager } from './archimate-diagram-manager';
 import { ArchiMateDiagramWidget } from './archimate-diagram-widget';
@@ -23,8 +23,8 @@ export class ArchiMateDiagramModule extends GLSPTheiaFrontendModule {
 
    override bindGLSPClientContribution(context: ContainerContext): void {
       // override client contribution to delay Theia frontend-backend connection for GLSP (see comments in contribution)
-      context.bind(ClientConribution).toSelf().inSingletonScope();
-      context.bind(GLSPClientContribution).toService(ClientConribution);
+      context.bind(ClientContribution).toSelf().inSingletonScope();
+      context.bind(GLSPClientContribution).toService(ClientContribution);
    }
 
    override bindDiagramWidgetFactory(context: ContainerContext): void {

@@ -1214,17 +1214,6 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
-"@eclipse-glsp/client@2.7.0":
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/client/-/client-2.7.0.tgz#21c3c3c697308e7941b08ae31383dd73bf98d5bc"
-  integrity sha512-Jkk9jDrUOCQ54myJtYyyYq+HShDgeeyB0zxHU6jaCAFLzFubz0svnW+0efplImpnYFlDdZCF54GbSIbJYRoyIw==
-  dependencies:
-    "@eclipse-glsp/sprotty" "2.7.0"
-    autocompleter "^9.1.2"
-    file-saver "^2.0.5"
-    snabbdom "~3.5.1"
-    vscode-jsonrpc "8.2.0"
-
 "@eclipse-glsp/client@2.8.0":
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/@eclipse-glsp/client/-/client-2.8.0.tgz#b6d47c2ff98a3878b0a41d844aee1393a22cf516"
@@ -1261,15 +1250,6 @@
     "@eclipse-glsp/server" "2.8.0"
     elkjs "^0.11.1"
 
-"@eclipse-glsp/protocol@2.7.0":
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-2.7.0.tgz#8e253dbd8365c207f7962b09d8a9b6638b5142a2"
-  integrity sha512-jHJxGU/jcj8n3dsHIeo3qseJQ/wNlhaWQ90+fSPHOT0pwg5DAvtWqs0ktVcSB5Xwjv4VCv1UqYOCR8K9uUrH4g==
-  dependencies:
-    sprotty-protocol "1.4.0"
-    uuid "~14.0.0"
-    vscode-jsonrpc "8.2.0"
-
 "@eclipse-glsp/protocol@2.8.0":
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/@eclipse-glsp/protocol/-/protocol-2.8.0.tgz#2b4ec1024affbfda3b687aed42bc57f844663ca6"
@@ -1302,18 +1282,6 @@
     winston "^3.3.3"
     ws "^8.12.1"
 
-"@eclipse-glsp/sprotty@2.7.0":
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/sprotty/-/sprotty-2.7.0.tgz#7f4f0f97d89b0f86461fbf45337b229e8fbd1f2a"
-  integrity sha512-pRkU0+M5ScLRXZduuqbRuTDJqoUo9Pq2t08KN9bZyjbTJaHcHFVsiCOCm2QQ0VGSyUmutXaq95YaSVVwbZ/IPA==
-  dependencies:
-    "@eclipse-glsp/protocol" "2.7.0"
-    autocompleter "^9.1.0"
-    snabbdom "~3.5.1"
-    sprotty "1.4.0"
-    sprotty-protocol "1.4.0"
-    vscode-jsonrpc "8.2.0"
-
 "@eclipse-glsp/sprotty@2.8.0":
   version "2.8.0"
   resolved "https://registry.yarnpkg.com/@eclipse-glsp/sprotty/-/sprotty-2.8.0.tgz#9dcf4e4cd318a2b887600860cb61548a0443448c"
@@ -1325,14 +1293,6 @@
     sprotty "1.4.0"
     sprotty-protocol "1.4.0"
     vscode-jsonrpc "8.2.0"
-
-"@eclipse-glsp/theia-integration@2.7.0":
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/@eclipse-glsp/theia-integration/-/theia-integration-2.7.0.tgz#ca0ca7968cc180fe869f28243910553957fe77b9"
-  integrity sha512-FOskzYl706qZdx24dxwP83+bsp9fAp25K2gsUpWyNv0Fdu7PYTRhG9CIX7UH0PPLd4aAEQ30Pe4nUB7cPb9+8w==
-  dependencies:
-    "@eclipse-glsp/client" "2.7.0"
-    ws "^8.17.1"
 
 "@eclipse-glsp/theia-integration@2.8.0":
   version "2.8.0"
@@ -17770,7 +17730,7 @@ utils-merge@1.0.1:
   resolved "https://registry.yarnpkg.com/utils-merge/-/utils-merge-1.0.1.tgz#9f95710f50a267947b2ccc124741c1028427e713"
   integrity sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==
 
-uuid@^14.0.0, uuid@^7.0.3, uuid@^8.3.0, uuid@^8.3.2, uuid@^9.0.0, uuid@^9.0.1, uuid@~10.0.0, uuid@~14.0.0:
+uuid@^14.0.0, uuid@^7.0.3, uuid@^8.3.0, uuid@^8.3.2, uuid@^9.0.0, uuid@^9.0.1, uuid@~10.0.0:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-9.0.1.tgz#e188d4c8853cc722220392c424cd637f32293f30"
   integrity sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==
