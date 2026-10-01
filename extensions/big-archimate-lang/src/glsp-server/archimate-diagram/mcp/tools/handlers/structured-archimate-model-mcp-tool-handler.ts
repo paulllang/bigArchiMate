@@ -28,7 +28,7 @@ export const BoundsSchema = z.object({
    bottom: z.number().positive()
 });
 
-// concept and graph output schemas
+// concept output schemas
 
 export const ElementNodeSchema = z.object({
    id: z.string(),
@@ -57,11 +57,6 @@ export const JunctionNodeSchema = z.object({
    bounds: BoundsSchema
 });
 
-export const GraphItemSchema = z.object({
-   id: z.string(),
-   type: z.string()
-});
-
 // layer output schemas
 
 export const StandardLayerSchema = z.object({
@@ -72,8 +67,7 @@ export const StandardLayerSchema = z.object({
 export const OtherLayerSchema = z.object({
    junctions: z.array(JunctionNodeSchema).optional(),
    groupings: z.array(ElementNodeSchema).optional(),
-   'crosslayer relations': z.array(RelationEdgeSchema).optional(),
-   graph: z.array(GraphItemSchema).optional()
+   crosslayerRelations: z.array(RelationEdgeSchema).optional()
 });
 
 // main output schema

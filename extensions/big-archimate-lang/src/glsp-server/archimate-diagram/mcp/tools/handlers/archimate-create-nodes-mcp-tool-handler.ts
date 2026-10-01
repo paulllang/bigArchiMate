@@ -57,10 +57,10 @@ export class ArchiMateCreateNodesMcpToolHandler extends OperationMcpDiagramToolH
       let dispatchedOperations = 0;
       // Sequential — each iteration must isolate its own creation in the post-dispatch diff.
       for (const node of nodes) {
-         const { elementTypeId, position, text } = node;
+         const { elementTypeId, position: nodePosition, text } = node;
 
          // Surface as `position` (matches element properties) rather than core's `location` for AI-facing API consistency.
-         const operation = CreateNodeOperation.create(elementTypeId, { location: position });
+         const operation = CreateNodeOperation.create(elementTypeId, { location: nodePosition });
          await this.actionDispatcher.dispatch(operation);
          dispatchedOperations++;
 

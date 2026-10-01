@@ -1,4 +1,4 @@
-import { GCompartment, GLabel, GModelElement } from '@eclipse-glsp/server';
+import { GCompartment, GGraph, GLabel, GModelElement } from '@eclipse-glsp/server';
 import {
    AbstractMcpDiagramToolHandler,
    McpElementsNotFoundError,
@@ -32,7 +32,7 @@ const QueryArchiMateConceptsOutputSchema = z.object({
       .optional()
       .describe(
          'Present in `inspect` mode when one or more requested ids referred to containers — lists those container ids. ' +
-            'The `elements` array then includes the container plus its descendants.'
+         'The `elements` array then includes the container plus its descendants.'
       )
 });
 
@@ -46,7 +46,9 @@ export class StructuredArchiMateQueryElementsMcpToolHandler extends AbstractMcpD
       'Find or inspect elements in the session diagram. Pass `elementIds` to inspect specific ' +
       'elements in detail (rich per-element data). Pass `types` and/or `labelMatch` to search by ' +
       'filter (slim id/type/label summaries with truncation). Useful as a precursor to the ' +
-      'create/modify/delete tools, and a cheaper alternative to `diagram-model` on large diagrams.';
+      'create/modify/delete tools, and a cheaper alternative to `diagram-model` on large diagrams. ' +
+      'However, strictly avoid invoking this tool after `diagram-model` if no modifying tools have ' +
+      'been invoked in the interim, as the latter already returns all element details.';
    readonly inputSchema = QueryElementsInputSchema;
    override readonly outputSchema = QueryArchiMateConceptsOutputSchema;
 
@@ -103,7 +105,7 @@ export class StructuredArchiMateQueryElementsMcpToolHandler extends AbstractMcpD
       let truncated = false;
       for (const id of this.modelState.index.allIds()) {
          const element = this.modelState.index.get(id);
-         if (!element || element instanceof GCompartment || element instanceof GLabel) {
+         if (!element || element instanceof GCompartment || element instanceof GLabel || element instanceof GGraph) {
             continue;
          }
          if (typeFilter && !typeFilter.has(element.type)) {

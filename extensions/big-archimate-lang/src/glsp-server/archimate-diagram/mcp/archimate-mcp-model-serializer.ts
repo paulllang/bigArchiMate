@@ -31,7 +31,7 @@ const ELEMENTS_SUB_BUCKET = 'elements';
 const RELATIONS_SUB_BUCKET = 'relations';
 /**
  * This bucket comprises all concepts that cannot be assigned to
- * a specific layer, such as junctions, groupings, and the graph itself.
+ * a specific layer, such as junctions and groupings.
  * It's on the same level as the layer buckets, but has sub-buckets for junctions, groupings, and cross-layer relations.
  */
 const OTHER_BUCKET = 'Other';
@@ -52,10 +52,6 @@ const JUNCTION_SUB_BUCKET = 'junctions';
  * all their elements they include are from the same layer or not.
  */
 const GROUPING_SUB_BUCKET = 'groupings';
-/**
- * This is a sub-bucket of the 'Other' bucket used for the graph itself.
- */
-const GRAPH_SUB_BUCKET = 'graph';
 
 /**
  * Groups ArchiMate concepts by their layer (Business, Application, Technology, ...),
@@ -131,7 +127,7 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
       const allKeys = new Set(conceptsByLayerArray.flatMap(obj => Object.keys(obj)));
 
       allKeys.forEach(layer => {
-         let combinedBucket: Record<string, SerializedElement[]> = {};
+         const combinedBucket: Record<string, SerializedElement[]> = {};
          for (const conceptsByLayer of conceptsByLayerArray) {
             for (const subBucketName of Object.keys(conceptsByLayer[layer] || {})) {
                combinedBucket[subBucketName] = [
@@ -170,8 +166,7 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
          [OTHER_BUCKET]: {
             [JUNCTION_SUB_BUCKET]: [],
             [GROUPING_SUB_BUCKET]: [],
-            [CROSSLAYER_RELATIONS_SUB_BUCKET]: [],
-            [GRAPH_SUB_BUCKET]: []
+            [CROSSLAYER_RELATIONS_SUB_BUCKET]: []
          }
       };
 
@@ -227,8 +222,6 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
       if (bucket === OTHER_BUCKET) {
          if (element.relation) {
             return CROSSLAYER_RELATIONS_SUB_BUCKET;
-         } else if (element.type === DefaultTypes.GRAPH) {
-            return GRAPH_SUB_BUCKET;
          } else if (element.junction) {
             return JUNCTION_SUB_BUCKET;
          }
@@ -253,15 +246,8 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
    protected adjustElement(element: SerializedElement): SerializedElement | undefined {
       const type = element.type;
 
-      if (typeof type !== 'string') {
+      if (typeof type !== 'string' || type === DefaultTypes.GRAPH) { // The graph element is irrelevant to the LLM so it's dropped.
          return undefined;
-      }
-
-      if (type === DefaultTypes.GRAPH) {
-         return {
-            id: element.id,
-            type
-         };
       }
 
       const relationConcept = ARCHIMATE_RELATION_TYPE_MAP.getReverse(type);

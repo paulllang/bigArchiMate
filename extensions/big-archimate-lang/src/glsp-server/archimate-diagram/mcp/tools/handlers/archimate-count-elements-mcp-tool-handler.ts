@@ -1,5 +1,4 @@
 import { ARCHIMATE_CONCEPT_TYPE_MAP } from '@big-archimate/protocol';
-import { DefaultTypes } from '@eclipse-glsp/server';
 import { CountElementsInput, CountElementsMcpToolHandler, McpToolResult } from '@eclipse-glsp/server-mcp';
 import { injectable } from 'inversify';
 import * as z from 'zod/v4';
@@ -24,7 +23,7 @@ export class ArchiMateCountElementsMcpToolHandler extends CountElementsMcpToolHa
       for (const id of this.modelState.index.allIds()) {
          const element = this.modelState.index.get(id);
          const isArchiMateConcept = ARCHIMATE_CONCEPT_TYPE_MAP.getReverse(element.type);
-         if (!isArchiMateConcept && element.type !== DefaultTypes.GRAPH) {
+         if (!isArchiMateConcept) {
             continue;
          }
          countsByType[element.type] = (countsByType[element.type] ?? 0) + 1;

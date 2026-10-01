@@ -11,7 +11,8 @@ import {
    McpLabelProvider,
    McpModelSerializer,
    ModifyNodesMcpToolHandler,
-   QueryElementsMcpToolHandler
+   QueryElementsMcpToolHandler,
+   ValidateDiagramMcpToolHandler
 } from '@eclipse-glsp/server-mcp';
 import { ArchiMateElementTypesProvider } from './archimate-element-types-provider.js';
 import { ArchiMateMcpLabelProvider } from './archimate-mcp-label-provider.js';
@@ -22,10 +23,13 @@ import { ArchiMateCreateNodesMcpToolHandler } from './tools/handlers/archimate-c
 import { ArchiMateDeleteElementsMcpToolHandler } from './tools/handlers/archimate-delete-elements-mcp-tool-handler.js';
 import { ArchiMateLayerSummaryMcpToolHandler } from './tools/handlers/archimate-layer-summary-tool-handler.js';
 import { ArchiMateModifyNodesMcpToolHandler } from './tools/handlers/archimate-modify-nodes-mcp-tool-handler.js';
+import { ArchiMateValidateDiagramMcpToolHandler } from './tools/handlers/archimate-validate-diagram-mcp-tool-handler.js';
 import { StructuredArchiMateModelMcpToolHandler } from './tools/handlers/structured-archimate-model-mcp-tool-handler.js';
 import { StructuredArchiMateQueryElementsMcpToolHandler } from './tools/handlers/structured-archimate-query-elements-mcp-tool-handler.js';
 import { UnstructuredArchiMateModelMcpToolHandler } from './tools/handlers/unstructured-archimate-model-mcp-tool-handler.js';
-import { UnstructuredArchiMateQueryElementsMcpToolHandler } from './tools/handlers/unstructured-archimate-query-elements-mcp-tool-handler.js';
+import {
+   UnstructuredArchiMateQueryElementsMcpToolHandler
+} from './tools/handlers/unstructured-archimate-query-elements-mcp-tool-handler.js';
 
 /**
  * ArchiMate-specific diagram-scope MCP module. Inherits the default MCP tool set
@@ -54,6 +58,7 @@ export class ArchiMateMcpDiagramModule extends DefaultMcpDiagramModule {
       binding.rebind(CreateEdgesMcpToolHandler, ArchiMateCreateEdgesMcpToolHandler);
       binding.rebind(DeleteElementsMcpToolHandler, ArchiMateDeleteElementsMcpToolHandler);
       binding.rebind(ModifyNodesMcpToolHandler, ArchiMateModifyNodesMcpToolHandler);
+      binding.rebind(ValidateDiagramMcpToolHandler, ArchiMateValidateDiagramMcpToolHandler);
 
       /**
        * @experimental

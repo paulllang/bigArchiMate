@@ -24,7 +24,8 @@ const conceptDescriptionMap: Record<ConceptType, string> = {
     */
 
    ApplicationCollaboration:
-      'An aggregate of two or more application internal active structure elements, that work together to perform collective application behavior.',
+      'An aggregate of two or more application internal active structure elements, ' +
+      'that work together to perform collective application behavior.',
    ApplicationComponent:
       'An encapsulation of application functionality aligned to implementation structure, which is modular and replaceable.',
    ApplicationEvent: 'An application state change.',
@@ -42,29 +43,34 @@ const conceptDescriptionMap: Record<ConceptType, string> = {
       'An aggregate of two or more business internal active structure elements that work together to perform collective behavior.',
    BusinessEvent: 'A business-related state change.',
    BusinessFunction:
-      'A collection of business behavior based on a chosen set of criteria such as required business resources and/or competencies, and is managed or performed as a whole.',
+      'A collection of business behavior based on a chosen set of criteria such as required business resources and/or competencies, ' +
+      'and is managed or performed as a whole.',
    BusinessInteraction:
-      'A unit of collective business behavior performed by (a collaboration of) two or more business actors, business roles, or business collaborations.',
+      'A unit of collective business behavior performed by (a collaboration of) two or more business actors, business roles, ' +
+      'or business collaborations.',
    BusinessInterface: 'A point of access where business services are made available to the environment.',
    BusinessObject: 'A concept used within a particular business domain.',
    BusinessProcess:
       'A sequence of business behaviors that achieves a specific result such as a defined set of products or business services.',
    BusinessRole:
-      'The responsibility for performing specific behavior, to which an actor can be assigned, or the part an actor plays in a particular action or event.',
+      'The responsibility for performing specific behavior, to which an actor can be assigned, ' +
+      'or the part an actor plays in a particular action or event.',
    BusinessService:
       'Explicitly defined behavior that a business role, business actor, or business collaboration exposes to its environment.',
    Capability: 'An ability that an active structure element, such as an organization, person, or system, possesses.',
    CommunicationNetwork: 'A set of structures that connects devices or system software for transmission, routing, and reception of data.',
    Constraint: 'A limitation on aspects of the architecture, its implementation process, or its realization.',
    Contract:
-      'A formal or informal specification of an agreement between a provider and a consumer that specifies the rights and obligations associated with a product and establishes functional and non-functional parameters for interaction.',
+      'A formal or informal specification of an agreement between a provider and a consumer that specifies the rights and obligations ' +
+      'associated with a product and establishes functional and non-functional parameters for interaction.',
    CourseOfAction: 'An approach or plan for configuring some capabilities and resources of the enterprise, undertaken to achieve a goal.',
    DataObject: 'Data structured for automated processing.',
    Deliverable: 'A precisely defined result of a work package.',
    Device: 'A physical IT resource upon which system software and artifacts may be stored or deployed for execution.',
    DistributionNetwork: 'A physical network used to transport materials or energy.',
    Driver:
-      'An external or internal condition that motivates an organization to define its goals and implement the changes necessary to achieve them.',
+      'An external or internal condition that motivates an organization to define its goals and implement the changes ' +
+      'necessary to achieve them.',
    Equipment: 'One or more physical machines, tools, or instruments that can create, use, store, move, or transform materials.',
    Facility: 'A physical structure or environment.',
    Gap: 'A statement of difference between two plateaus.',
@@ -72,29 +78,36 @@ const conceptDescriptionMap: Record<ConceptType, string> = {
    Grouping: 'Aggregates or composes concepts that belong together based on some common characteristic.',
    ImplementationEvent: 'A state change related to implementation or migration.',
    Location:
-      'A conceptual or physical place or position where concepts are located (e.g., structure elements) or performed (e.g., behavior elements).',
+      'A conceptual or physical place or position where concepts are located (e.g., structure elements) or ' +
+      'performed (e.g., behavior elements).',
    Material: 'Tangible physical matter or energy.',
    Meaning: 'The knowledge or expertise present in, or the interpretation given to, a concept in a particular context.',
    Node: 'A computational or physical resource that hosts, manipulates, or interacts with other computational or physical resources.',
    Outcome: 'An end result, effect, or consequence of a certain state of affairs.',
-   Path: 'A link between two or more technology internal active structure elements, through which these elements can exchange data, energy, or material.',
+   Path:
+      'A link between two or more technology internal active structure elements, through which these elements ' +
+      'can exchange data, energy, or material.',
    Plateau: 'A relatively stable state of the architecture that exists during a limited period of time.',
    Principle: 'A statement of intent defining a general property that applies to any system in a certain context in the architecture.',
    Product:
-      'A coherent collection of services and/or passive structure elements, accompanied by a contract, which is offered as a whole to (internal or external) customers.',
+      'A coherent collection of services and/or passive structure elements, accompanied by a contract, ' +
+      'which is offered as a whole to (internal or external) customers.',
    Representation: 'A perceptible form of the information carried by a business object.',
    Requirement: 'A statement of need defining a property that applies to a specific system as described by the architecture.',
    Resource: 'An asset owned or controlled by an individual or organization.',
    Stakeholder:
-      'The role of an individual, team, or organization (or classes thereof) that represents their interests in the effects of the architecture.',
+      'The role of an individual, team, or organization (or classes thereof) that represents their interests ' +
+      'in the effects of the architecture.',
    SystemSoftware:
       'Software that provides or contributes to an environment for storing, executing, and using software or data deployed within it.',
    TechnologyCollaboration:
-      'An aggregate of two or more technology internal active structure elements that work together to perform collective technology behavior.',
+      'An aggregate of two or more technology internal active structure elements that work together to ' +
+      'perform collective technology behavior.',
    TechnologyEvent: 'A technology state change.',
    TechnologyFunction: 'A collection of technology behavior that can be performed by a technology internal active structure element.',
    TechnologyInteraction:
-      'A unit of collective technology behavior performed by (a collaboration of) two or more technology internal active structure elements.',
+      'A unit of collective technology behavior performed by (a collaboration of) two or more technology internal ' +
+      'active structure elements.',
    TechnologyInterface: 'A point of access where technology services offered by a technology internal active structure can be accessed.',
    TechnologyProcess: 'A sequence of technology behaviors that achieves a specific result.',
    TechnologyService: 'An explicitly defined exposed technology behavior.',
@@ -123,20 +136,23 @@ const conceptDescriptionMap: Record<ConceptType, string> = {
     * Junctions
     */
 
-   And: 'Used to connect relationships of the same type with a logical AND (i.e., used to explicitly express that all elements together must participate in the relationship.)',
-   Or: 'Used to connect relationships of the same type with a logical OR or XOR (i.e., used to explicitly express that at least one of the elements participates in the relationship.)'
+   And:
+      'Used to connect relationships of the same type with a logical AND (i.e., used to explicitly express that all ' +
+      'elements together must participate in the relationship.)',
+   Or:
+      'Used to connect relationships of the same type with a logical OR or XOR (i.e., used to explicitly express ' +
+      'that at least one of the elements participates in the relationship.)'
 };
 
 /**
- * Augment ElementTypeEntry with custom property layer
+ * Augment ArchiMateElementTypeEntry with custom property layer
  */
-declare module '@eclipse-glsp/server-mcp' {
-   interface ElementTypeEntry {
-      layer?: LayerType;
-   }
+
+interface ArchiMateElementTypeEntry extends ElementTypeEntry {
+   layer?: LayerType;
 }
 
-const toEntry = (concept: ConceptType, glspType: string): ElementTypeEntry => {
+const toEntry = (concept: ConceptType, glspType: string): ArchiMateElementTypeEntry => {
    // Only elements accept text (= have a label)
    const acceptsText: boolean = ARCHIMATE_ELEMENT_TYPE_MAP.get(concept as ElementType) === undefined ? false : true;
 
@@ -157,11 +173,12 @@ const toEntry = (concept: ConceptType, glspType: string): ElementTypeEntry => {
 @injectable()
 export class ArchiMateElementTypesProvider implements ElementTypesProvider {
    get(): ElementTypes {
-      const nodeTypes: ElementTypeEntry[] = [
+      const nodeTypes: ArchiMateElementTypeEntry[] = [
          ...elementTypes.map(concept => toEntry(concept, ARCHIMATE_NODE_TYPE_MAP.get(concept))),
          ...junctionTypes.map(concept => toEntry(concept, ARCHIMATE_NODE_TYPE_MAP.get(concept)))
       ];
-      const edgeTypes: ElementTypeEntry[] = relationTypes.map(concept => toEntry(concept, ARCHIMATE_RELATION_TYPE_MAP.get(concept)));
+      const edgeTypes: ArchiMateElementTypeEntry[] =
+         relationTypes.map(concept => toEntry(concept, ARCHIMATE_RELATION_TYPE_MAP.get(concept)));
       return { nodeTypes, edgeTypes };
    }
 }
