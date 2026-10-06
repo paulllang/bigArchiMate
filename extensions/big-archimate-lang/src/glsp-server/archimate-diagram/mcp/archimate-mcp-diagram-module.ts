@@ -10,6 +10,7 @@ import {
    McpDiagramToolHandlerConstructor,
    McpLabelProvider,
    McpModelSerializer,
+   ModifyEdgesMcpToolHandler,
    ModifyNodesMcpToolHandler,
    QueryElementsMcpToolHandler,
    ValidateDiagramMcpToolHandler
@@ -22,6 +23,7 @@ import { ArchiMateCreateEdgesMcpToolHandler } from './tools/handlers/archimate-c
 import { ArchiMateCreateNodesMcpToolHandler } from './tools/handlers/archimate-create-nodes-mcp-tool-handler.js';
 import { ArchiMateDeleteElementsMcpToolHandler } from './tools/handlers/archimate-delete-elements-mcp-tool-handler.js';
 import { ArchiMateLayerSummaryMcpToolHandler } from './tools/handlers/archimate-layer-summary-tool-handler.js';
+import { ArchiMateModifyEdgesMcpToolHandler } from './tools/handlers/archimate-modify-edges-mcp-tool-handler.js';
 import { ArchiMateModifyNodesMcpToolHandler } from './tools/handlers/archimate-modify-nodes-mcp-tool-handler.js';
 import { ArchiMateValidateDiagramMcpToolHandler } from './tools/handlers/archimate-validate-diagram-mcp-tool-handler.js';
 import { StructuredArchiMateModelMcpToolHandler } from './tools/handlers/structured-archimate-model-mcp-tool-handler.js';
@@ -59,6 +61,7 @@ export class ArchiMateMcpDiagramModule extends DefaultMcpDiagramModule {
       binding.rebind(DeleteElementsMcpToolHandler, ArchiMateDeleteElementsMcpToolHandler);
       binding.rebind(ModifyNodesMcpToolHandler, ArchiMateModifyNodesMcpToolHandler);
       binding.rebind(ValidateDiagramMcpToolHandler, ArchiMateValidateDiagramMcpToolHandler);
+      binding.rebind(ModifyEdgesMcpToolHandler, ArchiMateModifyEdgesMcpToolHandler);
 
       /**
        * @experimental

@@ -4,13 +4,18 @@ import * as z from 'zod/v4';
 
 const ArchiMateElementTypeEntrySchema = z.object({
    id: z.string().describe('Element type id used by `create-*` tools (e.g., `node:business-actor`).'),
-   label: z.string().describe('Human-readable display name for the element TYPE (e.g., `Business Actor`).'),
+   label: z
+      .string()
+      .describe('Human-readable ArchiMate concept name (e.g., `Business Actor`).'),
    description: z.string().optional().describe('Human-readable definition according to the ArchiMate standard'),
    acceptsText: z
       .boolean()
       .optional()
       .describe('Whether `create-*` / `modify-*` tools should pass a `text` arg for elements of this type.'),
-   layer: z.string().optional().describe('The ArchiMate layer to which the element belongs. Edges are considered to be layerless.')
+   layer: z
+      .string()
+      .optional()
+      .describe('The ArchiMate layer to which the GLSP element belongs. GLSP edges are considered to be layerless.')
 });
 
 const ArchiMateElementTypesOutputSchema = z.object({

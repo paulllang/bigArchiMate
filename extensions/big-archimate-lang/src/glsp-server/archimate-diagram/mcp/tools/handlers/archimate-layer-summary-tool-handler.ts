@@ -7,8 +7,10 @@ export const ArchiMateLayerSummaryInputSchema = McpDiagramScopedInputSchema;
 export type ArchiMateLayerSummaryInput = z.infer<typeof ArchiMateLayerSummaryInputSchema>;
 
 export const ArchiMateLayerSummaryOutputSchema = z.object({
-   total: z.number().int().describe('Total nodes (= ArchiMate elements and junctions) in the diagram.'),
-   countsByLayer: z.record(z.string(), z.number().int()).describe('Nodes (= ArchiMate elements and junctions) count per ArchiMate layer.')
+   total: z.number().describe('Total number of nodes in the diagram.'),
+   countsByLayer: z
+      .record(z.string(), z.number())
+      .describe('Node count per ArchiMate layer (Business, Application, Technology, ...).')
 });
 
 /**
@@ -24,10 +26,10 @@ export class ArchiMateLayerSummaryMcpToolHandler extends AbstractMcpDiagramToolH
    readonly name = ArchiMateLayerSummaryMcpToolHandler.NAME;
    override readonly title = 'ArchiMate Layer Summary';
    readonly description =
-      'Count nodes (= ArchiMate elements and junctions) in the diagram grouped by ArchiMatelayer ' +
+      'Count nodes in the diagram grouped by ArchiMate layers ' +
       '(Business, Application, Technology, Motivation, Strategy, ImplementationAndMigration, Other). ' +
-      'Cheap layer-balance check before fetching the full diagram-model. ' +
-      'Relations and the graph itself are not included.';
+      'Cheap layer-balance check before fetching the full `diagram-model`. ' +
+      'Edges are excluded.';
    readonly inputSchema = ArchiMateLayerSummaryInputSchema;
    override readonly outputSchema = ArchiMateLayerSummaryOutputSchema;
 

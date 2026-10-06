@@ -4,28 +4,23 @@ import {
    McpElementsNotFoundError,
    McpModelSerializer,
    McpToolResult,
-   QueryElementMatchSchema,
    QueryElementsInput,
    QueryElementsInputSchema
 } from '@eclipse-glsp/server-mcp';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { OtherLayerSchema, StandardLayerSchema } from './structured-archimate-model-mcp-tool-handler.js';
+import { ArchiMateDiagramModelOutputSchema } from './structured-archimate-model-mcp-tool-handler.js';
 
-const InspectModeOutputSchema = z.object({
-   Application: StandardLayerSchema.optional(),
-   Business: StandardLayerSchema.optional(),
-   ImplementationAndMigration: StandardLayerSchema.optional(),
-   Motivation: StandardLayerSchema.optional(),
-   Strategy: StandardLayerSchema.optional(),
-   Technology: StandardLayerSchema.optional(),
-   Other: OtherLayerSchema.optional()
+const ArchiMateQueryElementMatchSchema = z.object({
+   id: z.string(),
+   elementTypeId: z.string(),
+   label: z.string().optional()
 });
 
-const QueryArchiMateConceptsOutputSchema = z.object({
+const ArchiMateQueryElementsOutputSchema = z.object({
    mode: z.enum(['list', 'inspect']).describe('Echoes which mode the call ran in.'),
-   matches: z.array(QueryElementMatchSchema).optional().describe('Present in `list` mode: slim id/type/label entries.'),
-   concepts: InspectModeOutputSchema.optional().describe('Present in `inspect` mode: rich per-concept detail.'),
+   matches: z.array(ArchiMateQueryElementMatchSchema).optional().describe('Present in `list` mode: slim id/type/label entries.'),
+   elements: ArchiMateDiagramModelOutputSchema.optional().describe('Present in `inspect` mode: rich per-concept detail.'),
    truncated: z.boolean().optional().describe('Present in `list` mode: true when more elements matched than `limit`.'),
    expandedFromContainers: z
       .array(z.string())
@@ -50,7 +45,7 @@ export class StructuredArchiMateQueryElementsMcpToolHandler extends AbstractMcpD
       'However, strictly avoid invoking this tool after `diagram-model` if no modifying tools have ' +
       'been invoked in the interim, as the latter already returns all element details.';
    readonly inputSchema = QueryElementsInputSchema;
-   override readonly outputSchema = QueryArchiMateConceptsOutputSchema;
+   override readonly outputSchema = ArchiMateQueryElementsOutputSchema;
 
    @inject(McpModelSerializer) protected serializer: McpModelSerializer;
 
@@ -71,7 +66,7 @@ export class StructuredArchiMateQueryElementsMcpToolHandler extends AbstractMcpD
 
       return this.success(this.summarizeInspect(elements, expandedFromContainers), {
          mode: 'inspect',
-         concepts: this.serializer.serializeStructuredArray(elements),
+         elements: this.serializer.serializeStructuredArray(elements),
          expandedFromContainers: expandedFromContainers.length > 0 ? expandedFromContainers : undefined
       });
    }
@@ -101,7 +96,7 @@ export class StructuredArchiMateQueryElementsMcpToolHandler extends AbstractMcpD
       const typeFilter = types && types.length > 0 ? new Set(types) : undefined;
       const needle = labelMatch?.toLowerCase();
 
-      const matches: { id: string; type: string; label?: string }[] = [];
+      const matches: { id: string; elementTypeId: string; label?: string }[] = [];
       let truncated = false;
       for (const id of this.modelState.index.allIds()) {
          const element = this.modelState.index.get(id);
@@ -119,15 +114,15 @@ export class StructuredArchiMateQueryElementsMcpToolHandler extends AbstractMcpD
             truncated = true;
             break;
          }
-         matches.push({ id: this.aliasService.alias(element.id), type: element.type, ...(label !== undefined ? { label } : {}) });
+         matches.push({ id: this.aliasService.alias(element.id), elementTypeId: element.type, ...(label !== undefined ? { label } : {}) });
       }
 
       const summary = matches.length === 0 ? 'no elements matched the query.' : this.renderMarkdown(matches, truncated);
       return this.success(summary, { mode: 'list', matches, truncated });
    }
 
-   protected renderMarkdown(matches: { id: string; type: string; label?: string }[], truncated: boolean): string {
-      const rows = matches.map(match => `- ${match.id} (${match.type})${match.label ? ` — "${match.label}"` : ''}`).join('\n');
+   protected renderMarkdown(matches: { id: string; elementTypeId: string; label?: string }[], truncated: boolean): string {
+      const rows = matches.map(match => `- ${match.id} (${match.elementTypeId})${match.label ? ` — "${match.label}"` : ''}`).join('\n');
       const tail = truncated ? '\n\n_(truncated — increase `limit` or refine filters to see more)_' : '';
       return `Query matched ${matches.length} element${matches.length === 1 ? '' : 's'}:\n${rows}${tail}`;
    }

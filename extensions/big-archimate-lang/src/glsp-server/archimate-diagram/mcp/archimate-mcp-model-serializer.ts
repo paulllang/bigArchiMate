@@ -3,6 +3,7 @@ import {
    ARCHIMATE_JUNCTION_TYPE_MAP,
    ARCHIMATE_NODE_TYPE_MAP,
    ARCHIMATE_RELATION_TYPE_MAP,
+   LayerType,
    getLayer,
    isElementType,
    isJunctionType,
@@ -20,38 +21,21 @@ import {
 import { inject, injectable } from 'inversify';
 import { ElementType, JunctionType } from '../../../language-server/generated/ast.js';
 import { GElementNode } from '../model/nodes.js';
+import {
+   ArchiMateEdgeOutputSchema,
+   ArchiMateLayerOutputSchema,
+   ArchiMateNodeOutputSchema
+} from './tools/handlers/structured-archimate-model-mcp-tool-handler.js';
 
 /**
- * This sub bucket comprises all elements of a specfic layer and is part of the layer's bucket.
+ * All bucket names follow the GLSP naming convention (elements, nodes, edges) rather than the
+ * ArchiMate naming convention (concepts, elements, relations) to avoid confusing the LLM,
+ * as all other tools adhere to GLSP standards.
  */
-const ELEMENTS_SUB_BUCKET = 'elements';
-/**
- * This sub bucket comprises all relations whose elements belong to the same layer and is part of the layer's bucket.
- */
-const RELATIONS_SUB_BUCKET = 'relations';
-/**
- * This bucket comprises all concepts that cannot be assigned to
- * a specific layer, such as junctions and groupings.
- * It's on the same level as the layer buckets, but has sub-buckets for junctions, groupings, and cross-layer relations.
- */
-const OTHER_BUCKET = 'Other';
-/**
- * This is a sub-bucket of the 'Other' bucket,
- * which is used for relations that connect elements from different layers, junctions, or groupings.
- */
-const CROSSLAYER_RELATIONS_SUB_BUCKET = 'crosslayer relations';
-/**
- * This is a sub-bucket of the 'Other' bucket used for junctions.
- * Junctions are always assigned to the 'Other' bucket, no matter if
- * all connected relations of a single junction are connected to elements from the same layer or not.
- */
-const JUNCTION_SUB_BUCKET = 'junctions';
-/**
- * This is a sub-bucket of the 'Other' bucket used for groupings.
- * Groupings are always assigned to the 'Other' bucket, no matter if
- * all their elements they include are from the same layer or not.
- */
-const GROUPING_SUB_BUCKET = 'groupings';
+
+export const NODES_SUB_BUCKET = 'nodes';
+export const EDGES_SUB_BUCKET = 'edges';
+export const OTHER_BUCKET = 'Other';
 
 /**
  * Groups ArchiMate concepts by their layer (Business, Application, Technology, ...),
@@ -60,6 +44,7 @@ const GROUPING_SUB_BUCKET = 'groupings';
  */
 @injectable()
 export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
+
    @inject(McpLabelProvider) protected labelProvider: McpLabelProvider;
 
    override serializeArray(elements: GModelElement[]): string {
@@ -87,20 +72,28 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
    }
 
    private bucketsToJson(buckets: Record<string, Record<string, SerializedElement[]>>): McpStructuredContent {
-      Object.keys(buckets).forEach(layer => {
-         const bucket = buckets[layer];
+      const diagramLayers: ArchiMateLayerOutputSchema[] = [];
 
-         Object.keys(bucket).forEach(subBucketName => {
-            if (bucket[subBucketName].length === 0) {
-               delete bucket[subBucketName];
-            }
-         });
+      Object.keys(buckets).forEach(layerName => {
+         const nodes = buckets[layerName][NODES_SUB_BUCKET];
+         const edges = buckets[layerName][EDGES_SUB_BUCKET];
 
-         if (Object.keys(bucket).length === 0) {
-            delete buckets[layer];
+         const layer: ArchiMateLayerOutputSchema = { name: layerName as LayerType };
+
+         if (nodes && nodes.length > 0) {
+            layer.nodes = nodes as ArchiMateNodeOutputSchema[];
+         }
+
+         if (edges && edges.length > 0) {
+            layer.edges = edges as ArchiMateEdgeOutputSchema[];
+         }
+
+         if (layer.nodes || layer.edges) {
+            diagramLayers.push(layer);
          }
       });
-      return buckets;
+
+      return { layers: diagramLayers };
    }
 
    private bucketsToMarkdown(buckets: Record<string, Record<string, SerializedElement[]>>): string {
@@ -114,12 +107,32 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
 
             return [
                `# ${layer}`,
-               ...subBuckets.flatMap(([subBucketName, subBucket]) => [`## ${subBucketName}`, objectArrayToMarkdownTable(subBucket)])
+               ...subBuckets.flatMap(([subBucketName, subBucket]) => [
+                  `## ${subBucketName}`,
+                  objectArrayToMarkdownTable(subBucket.map(this.formatObjectForMarkdownTable))
+               ])
             ];
          })
          .filter(([, bucket]) => bucket.length > 0)
          .join('\n');
    }
+
+   private formatObjectForMarkdownTable(element: SerializedElement): SerializedElement {
+      const formattedElement: SerializedElement = {};
+
+      for (const [key, value] of Object.entries(element)) {
+         if (typeof value !== 'object' || value === undefined) {
+            formattedElement[key] = value;
+            continue;
+         }
+         const obj = value as SerializedElement;
+         const subKeys = Object.keys(obj).join(', ');
+         const subValues = Object.values(obj).join(', ');
+         formattedElement[`${key} (${subKeys})`] = subValues;
+      }
+
+   return formattedElement;
+}
 
    protected archiMateBuildAliasedTypeBuckets(elements: GModelElement[]): Record<string, Record<string, SerializedElement[]>> {
       const conceptsByLayerArray = elements.map(element => this.archiMatePrepareElement(element));
@@ -153,22 +166,16 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
          flat.map(e => [e.id, e.type] as [string, ElementType | JunctionType | undefined])
       );
 
-      const buckets: Record<string, Record<string, SerializedElement[]>> = {
-         ...Object.fromEntries(
+      const buckets: Record<string, Record<string, SerializedElement[]>> =
+         Object.fromEntries(
             layerTypes.map(layer => [
                layer,
                {
-                  [ELEMENTS_SUB_BUCKET]: [],
-                  [RELATIONS_SUB_BUCKET]: []
+                  [NODES_SUB_BUCKET]: [],
+                  [EDGES_SUB_BUCKET]: []
                }
             ])
-         ),
-         [OTHER_BUCKET]: {
-            [JUNCTION_SUB_BUCKET]: [],
-            [GROUPING_SUB_BUCKET]: [],
-            [CROSSLAYER_RELATIONS_SUB_BUCKET]: []
-         }
-      };
+         );
 
       for (const serialized of flat) {
          this.combinePositionAndSize(serialized);
@@ -176,8 +183,13 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
          if (!adjusted) {
             continue;
          }
-         const bucket = this.bucketFor(adjusted, flatMap);
-         const subBucket = this.subBucketFor(adjusted, bucket);
+         const bucket = this.bucketFor(serialized, flatMap);
+         let subBucket = NODES_SUB_BUCKET;
+         const relation = ARCHIMATE_RELATION_TYPE_MAP.getReverse(serialized.type as string);
+         if (relation) {
+            subBucket = EDGES_SUB_BUCKET;
+         }
+
          buckets[bucket][subBucket].push(adjusted);
       }
 
@@ -185,7 +197,10 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
    }
 
    protected bucketFor(element: SerializedElement, elementIdToTypeMap: Map<string, ElementType | JunctionType | undefined>): string {
-      const concept = element.element ?? element.junction ?? element.relation;
+      const type = element.type as string;
+      const concept = ARCHIMATE_ELEMENT_TYPE_MAP.getReverse(type) ??
+                        ARCHIMATE_JUNCTION_TYPE_MAP.getReverse(type) ??
+                        ARCHIMATE_RELATION_TYPE_MAP.getReverse(type);
 
       if (typeof concept !== 'string') {
          return OTHER_BUCKET;
@@ -218,30 +233,10 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
       return OTHER_BUCKET;
    }
 
-   protected subBucketFor(element: SerializedElement, bucket: string): string {
-      if (bucket === OTHER_BUCKET) {
-         if (element.relation) {
-            return CROSSLAYER_RELATIONS_SUB_BUCKET;
-         } else if (element.junction) {
-            return JUNCTION_SUB_BUCKET;
-         }
-
-         return GROUPING_SUB_BUCKET;
-      } else {
-         if (element.relation) {
-            return RELATIONS_SUB_BUCKET;
-         }
-
-         return ELEMENTS_SUB_BUCKET;
-      }
-   }
-
    /**
     * This function determines which attributes of each concept the LLM sees.
-    * Each concept gets, in addition to its type, the ArchiMate concept name attached so the LLM can
-    * refer to a 'junction: Or' rather than just a 'type: node:circle:or'. Although the bounds could be
-    * calculated from position and size, including them saves the LLM from calculating them on its own,
-    * which has been shown to be very costly.
+    * Although the bounds could be calculated from position and size, including
+    * them saves the LLM from calculating them on its own, which has been shown to be very costly.
     */
    protected adjustElement(element: SerializedElement): SerializedElement | undefined {
       const type = element.type;
@@ -254,10 +249,9 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
       if (relationConcept) {
          return {
             id: element.id,
-            type,
-            relation: relationConcept,
-            sourceId: element.sourceId,
-            targetId: element.targetId
+            elementTypeId: type,
+            sourceElementId: this.aliasService.alias(element.sourceId as string),
+            targetElementId: this.aliasService.alias(element.targetId as string)
          };
       }
 
@@ -265,8 +259,7 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
       if (elementConcept) {
          return {
             id: element.id,
-            type,
-            element: elementConcept,
+            elementTypeId: type,
             label: this.labelProvider.getLabel(element as unknown as GElementNode)?.text,
             position: element.position,
             size: element.size,
@@ -278,8 +271,7 @@ export class ArchiMateMcpModelSerializer extends MarkdownMcpModelSerializer {
       if (junctionConcept) {
          return {
             id: element.id,
-            type,
-            junction: junctionConcept,
+            elementTypeId: type,
             position: element.position,
             size: element.size,
             bounds: element.bounds

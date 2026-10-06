@@ -11,7 +11,7 @@ import {
     SetViewMcpToolHandler
 } from '@eclipse-glsp/server-mcp';
 import { injectable } from 'inversify';
-import { ArchiMateLayerSummaryMcpToolHandler } from '../../archimate-layer-summary-tool-handler.js';
+import { ArchiMateLayerSummaryMcpToolHandler } from '../../tools/handlers/archimate-layer-summary-tool-handler.js';
 
 /**
  * Prompt template that instructs the agent to produce a structured description of a diagram.

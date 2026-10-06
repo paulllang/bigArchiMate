@@ -13,6 +13,9 @@ import {
 } from '@eclipse-glsp/client';
 import { GlspSelectionDataService } from '@eclipse-glsp/theia-integration';
 import { ContainerModule, injectable, interfaces } from '@theia/core/shared/inversify';
+import { TYPES as SPROTTY_TYPES } from 'sprotty';
+import { LibavoidDiamondAnchor, LibavoidEllipseAnchor, LibavoidRectangleAnchor, LibavoidRouter, RouteType } from 'sprotty-routing-libavoid';
+import { ArchimateMagicEdgeConnectorPalette } from './archimate-magic-edge-connector-palette';
 import { CustomMouseDeleteTool } from './delete-tool';
 import { DiagramStartup } from './diagram-startup';
 import { ErrorExtension } from './error-extension';
@@ -20,9 +23,6 @@ import { CustomMetadataPlacer } from './metadata-placer';
 import { MousePositionTracker } from './mouse-position-tracker';
 import { SelectionDataService } from './selection-data-service';
 import { CustomToolPalette } from './tool-palette';
-import { TYPES as SPROTTY_TYPES } from 'sprotty';
-import { LibavoidDiamondAnchor, LibavoidEllipseAnchor, LibavoidRectangleAnchor, LibavoidRouter, RouteType } from 'sprotty-routing-libavoid';
-import { ArchimateMagicEdgeConnectorPalette } from './archimate-magic-edge-connector-palette';
 
 export function createDiagramModule(registry: interfaces.ContainerModuleCallBack): ContainerModule {
    return new ContainerModule((bind, unbind, isBound, rebind, unbindAsync, onActivation, onDeactivation) => {
