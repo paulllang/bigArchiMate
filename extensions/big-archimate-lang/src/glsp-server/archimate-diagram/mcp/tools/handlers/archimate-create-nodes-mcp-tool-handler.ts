@@ -1,4 +1,4 @@
-import { ApplyLabelEditOperation, CreateNodeOperation } from '@eclipse-glsp/server';
+import { ApplyLabelEditOperation, CreateNodeOperation, GModelElement } from '@eclipse-glsp/server';
 import {
    CreateNodesInput,
    CreateNodesOutputSchema,
@@ -65,11 +65,18 @@ export class ArchiMateCreateNodesMcpToolHandler extends OperationMcpDiagramToolH
          dispatchedOperations++;
 
          const afterIds = this.modelState.index.allIds();
-         const newIds = afterIds.filter(id => !beforeIds.includes(id));
-         const newElements = newIds.map(id => this.modelState.index.find(id)).filter(element => element?.type === elementTypeId);
-         const newElement = newElements[0];
-         if (newElements.length > 1) {
-            this.logger.warn('More than 1 new element created');
+         const knownIds = new Set(beforeIds);
+         const newElements = afterIds
+            .filter(id => !knownIds.has(id))
+            .map(id => this.modelState.index.find(id))
+            .filter((element): element is GModelElement => element !== undefined);
+         // Fall back to the first new element: the built type may differ from the requested
+         // `elementTypeId` (type hint vs. concrete GModel type). `allIds()` is pre-order, so the
+         // first entry is the created element itself rather than one of its new children.
+         const typeMatches = newElements.filter(element => element.type === elementTypeId);
+         const newElement = typeMatches[0] ?? newElements[0];
+         if (newElements.length > 1 && typeMatches.length !== 1) {
+               this.logger.warn(`Ambiguous creation result for '${elementTypeId}': picked '${newElement?.id}' among new elements`);
          }
          beforeIds = afterIds;
 
@@ -89,7 +96,14 @@ export class ArchiMateCreateNodesMcpToolHandler extends OperationMcpDiagramToolH
             }
          }
 
-         createdNodes.push(this.describeResolvedElement(newElement));
+         const describedElement = this.describeElement(newElement.id);
+         if (!describedElement) {
+            errors.push(
+               `Node creation likely failed because the created element could not be fetched from the source model: ${JSON.stringify(node)}`
+            );
+            continue;
+         }
+         createdNodes.push(describedElement);
       }
 
       const successListStr = createdNodes

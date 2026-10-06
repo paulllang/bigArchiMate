@@ -54,6 +54,6 @@ export class ArchiMateLayerSummaryMcpToolHandler extends AbstractMcpDiagramToolH
 
    protected renderMarkdown(total: number, countsByLayer: Record<string, number>): string {
       const rows = layerTypes.map(layer => `- ${layer}: ${countsByLayer[layer] ?? 0}`).join('\n');
-      return `Total ArchiMate element${total === 1 ? '' : 's'}: ${total}\n\nBy layer:\n${rows}`;
+      return `Total node${total === 1 ? '' : 's'}: ${total}\n\nBy layer:\n${rows}`;
    }
 }
