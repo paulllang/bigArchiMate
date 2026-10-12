@@ -13,10 +13,10 @@ import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
 
 const ArchiMateNodeBoundsSchema = z.object({
-   left: z.number().positive().describe('Left boundary coordinate in diagram space'),
-   right: z.number().positive().describe('Right boundary coordinate in diagram space'),
-   top: z.number().positive().describe('Top boundary coordinate in diagram space'),
-   bottom: z.number().positive().describe('Bottom boundary coordinate in diagram space')
+   left: z.number().describe('Left boundary coordinate in diagram space'),
+   right: z.number().describe('Right boundary coordinate in diagram space'),
+   top: z.number().describe('Top boundary coordinate in diagram space'),
+   bottom: z.number().describe('Bottom boundary coordinate in diagram space')
 });
 
 const ArchiMateNodeSchema = z.object({
@@ -113,8 +113,6 @@ export class StructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagramTo
    // It will be placed in the content property of the response,
    // whereas the serialized diagram will be in structuredContent.
    protected summarizeStructuredModel(root: GModelElement, elementCount: number): string {
-      return `Diagram '${this.aliasService.alias(root.id)}' (${root.type}) contains ${elementCount} element${
-         elementCount === 1 ? '' : 's'
-      }. Full structure in structuredContent.`;
+      return `Diagram contains ${elementCount} element${elementCount === 1 ? '' : 's'}. Full structure in structuredContent.`;
    }
 }

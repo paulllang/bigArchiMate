@@ -46,8 +46,6 @@ export class UnstructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagram
    // It will be placed before the serialized diagram together
    // in the content property of the response.
    protected summarizeModel(root: GModelElement, elementCount: number, sessionId: string): string {
-      return `Diagram '${this.aliasService.alias(root.id)}' (${root.type}) contains ${elementCount} element${
-         elementCount === 1 ? '' : 's'
-      } for sessionId '${sessionId}'.`;
+      return `Diagram contains ${elementCount} element${elementCount === 1 ? '' : 's'} for sessionId '${sessionId}'.`;
    }
 }
