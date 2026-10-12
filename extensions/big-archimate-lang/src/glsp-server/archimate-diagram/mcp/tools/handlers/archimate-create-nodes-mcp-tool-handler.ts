@@ -17,7 +17,8 @@ export const ArchiMateCreateNodeSpecSchema = z.strictObject({
    elementTypeId: z
       .string()
       .describe(
-         'Element type ID (e.g., `node:business-actor`, `node:application-service`). Use the `element-types` tool to discover valid IDs.'
+         'Element type ID (e.g., `node:business-actor`, `node:application-service`). ' +
+            'Use the `element-types` tool to discover valid IDs.'
       ),
    position: position.describe('Position where the node should be created (absolute diagram coordinates)'),
    text: z.string().optional().describe('Label text to use in case the given element type allows for labels.')
@@ -76,7 +77,7 @@ export class ArchiMateCreateNodesMcpToolHandler extends OperationMcpDiagramToolH
          const typeMatches = newElements.filter(element => element.type === elementTypeId);
          const newElement = typeMatches[0] ?? newElements[0];
          if (newElements.length > 1 && typeMatches.length !== 1) {
-               this.logger.warn(`Ambiguous creation result for '${elementTypeId}': picked '${newElement?.id}' among new elements`);
+            this.logger.warn(`Ambiguous creation result for '${elementTypeId}': picked '${newElement?.id}' among new elements`);
          }
          beforeIds = afterIds;
 
@@ -107,7 +108,7 @@ export class ArchiMateCreateNodesMcpToolHandler extends OperationMcpDiagramToolH
       }
 
       const successListStr = createdNodes
-         .map(({ id, elementTypeId, label }) => `- ${label ? `'${label}' ` : ''}${elementTypeId} (#${id})`)
+         .map(({ id, elementTypeId, label }) => `- ${label ? `'${label}' ` : ''}${elementTypeId} (${id})`)
          .join('\n');
       // Per-input errors / warnings are surfaced in `errors` / `warnings`; the call itself still
       // succeeds — rolling back partial creates would require operation-level transactions.

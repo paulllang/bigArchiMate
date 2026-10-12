@@ -9,7 +9,7 @@ import {
 } from '@eclipse-glsp/server-mcp';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
-import { ArchiMateDiagramModelOutputSchema } from './structured-archimate-model-mcp-tool-handler.js';
+import { ArchiMateLayerOutputSchema } from './structured-archimate-model-mcp-tool-handler.js';
 
 const ArchiMateQueryElementMatchSchema = z.object({
    id: z.string(),
@@ -20,14 +20,17 @@ const ArchiMateQueryElementMatchSchema = z.object({
 const ArchiMateQueryElementsOutputSchema = z.object({
    mode: z.enum(['list', 'inspect']).describe('Echoes which mode the call ran in.'),
    matches: z.array(ArchiMateQueryElementMatchSchema).optional().describe('Present in `list` mode: slim id/type/label entries.'),
-   elements: ArchiMateDiagramModelOutputSchema.optional().describe('Present in `inspect` mode: rich per-concept detail.'),
+   layers: z
+      .array(ArchiMateLayerOutputSchema)
+      .optional()
+      .describe('Present in `inspect` mode: rich per-element detail sorted by ArchiMate layers.'),
    truncated: z.boolean().optional().describe('Present in `list` mode: true when more elements matched than `limit`.'),
    expandedFromContainers: z
       .array(z.string())
       .optional()
       .describe(
          'Present in `inspect` mode when one or more requested ids referred to containers — lists those container ids. ' +
-         'The `elements` array then includes the container plus its descendants.'
+            'The `elements` array then includes the container plus its descendants.'
       )
 });
 
@@ -63,10 +66,11 @@ export class StructuredArchiMateQueryElementsMcpToolHandler extends AbstractMcpD
       }
       const elements: GModelElement[] = realIds.map(id => this.modelState.index.get(id)!);
       const expandedFromContainers = this.getExpandedContainers(elements);
+      const structured = this.serializer.serializeStructuredArray(elements);
 
       return this.success(this.summarizeInspect(elements, expandedFromContainers), {
          mode: 'inspect',
-         elements: this.serializer.serializeStructuredArray(elements),
+         ...structured,
          expandedFromContainers: expandedFromContainers.length > 0 ? expandedFromContainers : undefined
       });
    }

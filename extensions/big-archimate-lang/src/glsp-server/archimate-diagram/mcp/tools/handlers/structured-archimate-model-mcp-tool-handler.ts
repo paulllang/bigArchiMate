@@ -69,7 +69,6 @@ export const ArchiMateLayerOutputSchema = z.object({
 export type ArchiMateLayerOutputSchema = z.infer<typeof ArchiMateLayerOutputSchema>;
 
 export const ArchiMateDiagramModelOutputSchema = z.object({
-   sessionId: z.string().describe('GLSP client session ID for the open diagram.'),
    layers: z
       .array(ArchiMateLayerOutputSchema)
       .optional()
@@ -107,7 +106,7 @@ export class StructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagramTo
          count++;
       }
 
-      return this.success(this.summarizeStructuredModel(root, count), { sessionId, ...structured });
+      return this.success(this.summarizeStructuredModel(root, count), { ...structured });
    }
 
    // Summary line when isStructured is enabled.

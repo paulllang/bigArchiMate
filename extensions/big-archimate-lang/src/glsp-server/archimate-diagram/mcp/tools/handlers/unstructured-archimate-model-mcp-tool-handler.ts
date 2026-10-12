@@ -1,4 +1,4 @@
-import { GCompartment, GLabel, GModelElement } from '@eclipse-glsp/server';
+import { GCompartment, GGraph, GLabel, GModelElement } from '@eclipse-glsp/server';
 import {
    AbstractMcpDiagramToolHandler,
    DiagramModelInput,
@@ -32,7 +32,7 @@ export class UnstructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagram
 
       for (const id of this.modelState.index.allIds()) {
          const element = this.modelState.index.get(id);
-         if (!element || element instanceof GCompartment || element instanceof GLabel) {
+         if (!element || element instanceof GCompartment || element instanceof GLabel || element instanceof GGraph) {
             continue;
          }
          count++;
