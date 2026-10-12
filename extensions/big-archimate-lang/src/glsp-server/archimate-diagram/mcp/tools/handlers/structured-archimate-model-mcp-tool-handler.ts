@@ -1,5 +1,5 @@
 import { layerTypes } from '@big-archimate/protocol';
-import { GCompartment, GLabel, GModelElement } from '@eclipse-glsp/server';
+import { GCompartment, GGraph, GLabel, GModelElement } from '@eclipse-glsp/server';
 import {
    AbstractMcpDiagramToolHandler,
    DiagramModelInput,
@@ -21,9 +21,11 @@ const ArchiMateNodeBoundsSchema = z.object({
 
 const ArchiMateNodeSchema = z.object({
    id: z.string().describe('Aliased node id.'),
-   elementTypeId: z.string().describe(
-      'Node type ID (e.g., `node:business-actor`, `node:application-service`). Use the `element-types` tool to discover valid IDs.'
-   ),
+   elementTypeId: z
+      .string()
+      .describe(
+         'Node type ID (e.g., `node:business-actor`, `node:application-service`). Use the `element-types` tool to discover valid IDs.'
+      ),
    label: z.string().optional().describe('Primary label text, when the element has one.'),
    position: position,
    size: NodeSizeSchema,
@@ -33,42 +35,45 @@ export type ArchiMateNodeOutputSchema = z.infer<typeof ArchiMateNodeSchema>;
 
 const ArchiMateEdgeSchema = z.object({
    id: z.string().describe('Aliased edge id.'),
-   elementTypeId: z.string().describe(
-   'Edge type ID (e.g., `edge:association`, `edge:composition`, `edge:assignment`). Use the `element-types` tool to discover valid IDs.'
-   ),
+   elementTypeId: z
+      .string()
+      .describe(
+         'Edge type ID (e.g., `edge:association`, `edge:composition`, `edge:assignment`). ' +
+            'Use the `element-types` tool to discover valid IDs.'
+      ),
    sourceElementId: z.string().describe('ID of the source element (must exist in the diagram)'),
    targetElementId: z.string().describe('ID of the target element (must exist in the diagram)')
 });
 export type ArchiMateEdgeOutputSchema = z.infer<typeof ArchiMateEdgeSchema>;
 
 export const ArchiMateLayerOutputSchema = z.object({
-  name: z.enum(layerTypes).describe('Name of the ArchiMate layer.'),
-  nodes: z
-    .array(ArchiMateNodeSchema)
-    .optional()
-    .describe(
-      'All nodes belonging to this ArchiMate layer. Junctions and grouping nodes are assigned to the custom "Other" layer, ' +
-      'as they do not belong to a specific layer according to the ArchiMate standard.'
-    ),
-  edges: z
-    .array(ArchiMateEdgeSchema)
-    .optional()
-    .describe(
-      'Edges between nodes within the same ArchiMate layer. ' +
-      'Edges connecting elements from different ArchiMate layers are assigned to the custom "Other" layer. ' +
-      'Although edges are layerless accodring to the ArchiMate standard, ' +
-      'this approach allows the LLM to read the model layer by layer like an enterprise architect.'
-    )
+   name: z.enum(layerTypes).describe('Name of the ArchiMate layer.'),
+   nodes: z
+      .array(ArchiMateNodeSchema)
+      .optional()
+      .describe(
+         'All nodes belonging to this ArchiMate layer. Junctions and grouping nodes are assigned to the custom "Other" layer, ' +
+            'as they do not belong to a specific layer according to the ArchiMate standard.'
+      ),
+   edges: z
+      .array(ArchiMateEdgeSchema)
+      .optional()
+      .describe(
+         'Edges between nodes within the same ArchiMate layer. ' +
+            'Edges connecting elements from different ArchiMate layers are assigned to the custom "Other" layer. ' +
+            'Although edges are layerless accodring to the ArchiMate standard, ' +
+            'this approach allows the LLM to read the model layer by layer like an enterprise architect.'
+      )
 });
 
 export type ArchiMateLayerOutputSchema = z.infer<typeof ArchiMateLayerOutputSchema>;
 
 export const ArchiMateDiagramModelOutputSchema = z.object({
-  sessionId: z.string().describe('GLSP client session ID for the open diagram.'),
-  layers: z
-    .array(ArchiMateLayerOutputSchema)
-    .optional()
-    .describe('List of all active ArchiMate layers in the diagram, containing their respective nodes and edges.')
+   sessionId: z.string().describe('GLSP client session ID for the open diagram.'),
+   layers: z
+      .array(ArchiMateLayerOutputSchema)
+      .optional()
+      .describe('List of all active ArchiMate layers in the diagram, containing their respective nodes and edges.')
 });
 /**
  * Mcp tool handler that returns the serialized diagram as JSON in the
@@ -96,7 +101,7 @@ export class StructuredArchiMateModelMcpToolHandler extends AbstractMcpDiagramTo
 
       for (const id of this.modelState.index.allIds()) {
          const element = this.modelState.index.get(id);
-         if (!element || element instanceof GCompartment || element instanceof GLabel) {
+         if (!element || element instanceof GCompartment || element instanceof GLabel || element instanceof GGraph) {
             continue;
          }
          count++;
