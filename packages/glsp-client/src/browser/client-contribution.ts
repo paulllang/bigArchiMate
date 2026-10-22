@@ -28,12 +28,11 @@ export class ClientContribution extends BaseGLSPClientContribution {
    readonly id = ArchiMateLanguageContributionId;
 
    protected override async createInitializeParameters(): Promise<McpInitializeParameters> {
-
       // User can choose in settings.json or through the UI to use a random port or a fixed port for the GLSP server.
       // If a fixed port is chosen, we read it from the preferences.
       let portNumber = 0; // (0 = random)
-      if (!this.preferenceService.get('big-archimate.mcp.port.random', true)) {
-         portNumber = this.preferenceService.get('big-archimate.mcp.port.number', 0);
+      if (this.preferenceService.get('big-archimate.mcp.port', 0) !== 0) {
+         portNumber = this.preferenceService.get('big-archimate.mcp.port', 0);
       }
 
       return {
