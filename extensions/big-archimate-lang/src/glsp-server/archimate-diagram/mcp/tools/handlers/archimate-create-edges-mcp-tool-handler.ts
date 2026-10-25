@@ -1,4 +1,9 @@
-import { ARCHIMATE_NODE_TYPE_MAP, ARCHIMATE_RELATION_TYPE_MAP, isElementType } from '@big-archimate/protocol';
+import {
+   ARCHIMATE_CONCEPT_TYPE_MAP,
+   ARCHIMATE_RELATION_TYPE_MAP,
+   ElementType, isElementType,
+   relationTypes
+} from '@big-archimate/protocol';
 import { ChangeRoutingPointsOperation, CreateEdgeOperation, DiagramConfiguration, GModelElement } from '@eclipse-glsp/server';
 import {
    CreateEdgesInput,
@@ -14,6 +19,7 @@ import {
 } from '@eclipse-glsp/server-mcp';
 import { inject, injectable } from 'inversify';
 import * as z from 'zod/v4';
+import { JunctionType, RelationType } from '../../../../../language-server/generated/ast.js';
 import { RelationValidator } from '../../../../../language-server/util/validation/relation-validator.js';
 
 /** Single edge-creation entry. Strict so an LLM-typoed field surfaces as a validation error instead of being silently dropped. */
@@ -221,22 +227,48 @@ export class ArchiMateCreateEdgesMcpToolHandler extends OperationMcpDiagramToolH
       const isValid = false;
 
       const relationType = ARCHIMATE_RELATION_TYPE_MAP.getReverse(elementTypeId);
-      const sourceType = ARCHIMATE_NODE_TYPE_MAP.getReverse(source.type);
-      const targetType = ARCHIMATE_NODE_TYPE_MAP.getReverse(target.type);
+      const sourceType = ARCHIMATE_CONCEPT_TYPE_MAP.getReverse(source.type);
+      const targetType = ARCHIMATE_CONCEPT_TYPE_MAP.getReverse(target.type);
       const sourceAliasId = this.aliasService.alias(source.id);
       const targetAliasId = this.aliasService.alias(target.id);
 
-      if (!RelationValidator.isValidSource(relationType, sourceType)) {
-         const reason = `Invalid edge source. ${
-            isElementType(sourceType) ? `Element of type \`${sourceType}\`` : 'Junction'
-         } with ID \`${sourceAliasId}\` cannot be assigned as a source to an edge of type \`${relationType}\``;
+      /**
+       * According to the ArchiMate 3.2 specification, an edge can actually be the source or target of another edge.
+       * (e.g., A "Flow"-Edge is connected with an "Artifact"-Node via an "Association"-Edge. )
+       * However, this is not yet possible in bigArchiMate. As soon as it is implemented, this validation should be removed.
+       * For now, we return an error if the source or target is an edge.
+       */
+      if (relationTypes.includes(sourceType as RelationType)) {
+         const reason = 'Invalid edge source: An edge cannot be the source of an edge. ' +
+         'Only nodes can be the source in bigArchiMate.';
          return { isValid, reason };
       }
 
-      if (!RelationValidator.isValidTarget(relationType, sourceType, targetType)) {
-         const reason = `Invalid edge target. ${
+      if (relationTypes.includes(targetType as RelationType)) {
+         const reason = 'Invalid edge target: An edge cannot be the target of an edge. ' +
+         'Only nodes can be the target in bigArchiMate.';
+         return { isValid, reason };
+      }
+
+      if (!RelationValidator.isValidSource(
+         relationType,
+         sourceType as ElementType | JunctionType
+      )) {
+         const reason = `Invalid edge source: ${
+            isElementType(sourceType) ? `Element of type \`${sourceType}\`` : 'Junction'
+         } with ID \`${sourceAliasId}\` cannot be assigned as a source to an edge of type \`${relationType}\`.`;
+         return { isValid, reason };
+      }
+
+      if (!RelationValidator.isValidTarget(
+         relationType,
+         sourceType as ElementType | JunctionType,
+         targetType as ElementType | JunctionType
+      )) {
+         const reason = `Invalid edge target: ${
             isElementType(targetType) ? `Element of type \`${targetType}\`` : 'Junction'
-         } with ID \`${targetAliasId}\` cannot be assigned as a target to an edge of type \`${relationType}\``;
+         } with ID \`${targetAliasId}\` cannot be assigned as a target to an edge of type \`${relationType}\` ` +
+         `with source element of type \`${sourceType}\`.`;
          return { isValid, reason };
       }
 
