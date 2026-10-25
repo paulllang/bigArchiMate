@@ -4,7 +4,7 @@ import { injectable } from 'inversify';
 import * as z from 'zod/v4';
 
 const CountElementsOutputSchema = z.object({
-   total: z.number().describe('Total element count across the diagram (graph itself as root included).'),
+   total: z.number().describe('Total element count across the diagram.'),
    countsByType: z.record(z.string(), z.number().int()).describe('Element count grouped by element type.')
 });
 
